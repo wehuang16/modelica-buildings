@@ -1,19 +1,19 @@
 within Buildings.Fluid.HeatExchangers.AdiabaticPads.BaseClasses.Characteristics;
-function SaturationEfficiency "Saturation efficiency vs. air speed"
+function Pressure "Pressure vs. air speed"
   extends Modelica.Icons.Function;
   input
-    Buildings.Fluid.HeatExchangers.AdiabaticPads.BaseClasses.Characteristics.SaturationEfficiencyParameters
-    per "Efficiency performance data";
+    Buildings.Fluid.HeatExchangers.AdiabaticPads.BaseClasses.Characteristics.PressureParameters
+    per "Pressure performance data";
   input Real v "Air speed";
   input Real d[:] "Derivatives at support points for spline interpolation";
-  output Real eta(unit="1", final quantity="Efficiency") "Efficiency";
+  output Real dp(final quantity="Pressure") "Pressure drop";
 
 protected
   Integer n = size(per.v, 1) "Number of data points";
   Integer i "Integer to select data interval";
 algorithm
   if n == 1 then
-    eta := per.eta[1];
+    dp := per.dp[1];
   else
     i :=1;
     for j in 1:n-1 loop
@@ -22,12 +22,12 @@ algorithm
        end if;
     end for;
     // Extrapolate or interpolate the data
-    eta:=Buildings.Utilities.Math.Functions.cubicHermiteLinearExtrapolation(
+    dp:=Buildings.Utilities.Math.Functions.cubicHermiteLinearExtrapolation(
                 x=v,
                 x1=per.v[i],
                 x2=per.v[i + 1],
-                y1=per.eta[i],
-                y2=per.eta[i + 1],
+                y1=per.dp[i],
+                y2=per.dp[i + 1],
                 y1d=d[i],
                 y2d=d[i+1]);
   end if;
@@ -54,4 +54,4 @@ This is for
 </li>
 </ul>
 </html>"));
-end SaturationEfficiency;
+end Pressure;

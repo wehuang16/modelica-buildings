@@ -22,7 +22,8 @@ model AdiabaticPad "Single adiabatic pad"
     annotation (Placement(transformation(extent={{-72,-92},{-52,-72}})));
 
   BaseClasses.PadInterface padInterface(per(
-      final efficiency=per.efficiency))
+      final efficiency=per.efficiency,
+      final pressure=per.pressure))
     annotation (Placement(transformation(extent={{0,-80},{20,-60}})));
 
 public
@@ -73,8 +74,8 @@ equation
   satEff = padInterface.eta;
   dp = Modelica.Fluid.Utilities.regStep(
     x=port_a.m_flow,
-    y1=25,
-    y2=-25,
+    y1=padInterface.dp,
+    y2=-1*padInterface.dp,
     x_small=m_flow_small);
 
   // Mass balance (no storage)

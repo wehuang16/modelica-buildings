@@ -1,10 +1,10 @@
 within Buildings.Fluid.HeatExchangers.AdiabaticPads.BaseClasses.Characteristics;
-record SaturationEfficiencyParameters
-  "Record for saturation efficiency vs. air speed"
+record PressureParameters
+  "Record for pressure vs. air speed"
   extends Modelica.Icons.Record;
   parameter Real v[:](each min=0)
     "Part load ratio, y = PEle/PEle_nominal";
-  parameter Modelica.Units.SI.Efficiency eta[size(v, 1)](each max=1)
+  parameter Modelica.Units.SI.Pressure dp[size(v, 1)]
     "Fan or pump efficiency at these part load ratios";
   annotation (Documentation(info="<html>
 <p>
@@ -24,4 +24,4 @@ First implementation.
 </li>
 </ul>
 </html>"));
-end SaturationEfficiencyParameters;
+end PressureParameters;

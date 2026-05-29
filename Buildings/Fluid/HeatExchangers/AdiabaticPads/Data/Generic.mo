@@ -2,14 +2,17 @@ within Buildings.Fluid.HeatExchangers.AdiabaticPads.Data;
 record Generic "Generic data record for movers"
   extends Modelica.Icons.Record;
 
-
-  // Arrays for efficiency values
   parameter
-    Buildings.Fluid.HeatExchangers.AdiabaticPads.BaseClasses.Characteristics.saturationEfficiencyParameters
+    Buildings.Fluid.HeatExchangers.AdiabaticPads.BaseClasses.Characteristics.SaturationEfficiencyParameters
     efficiency(
       v={0},
-      eta={0.8}) "Total or hydraulic efficiency vs. volumetric flow rate";
+      eta={0.7}) "Saturation efficiency vs. air speed";
 
+  parameter
+    Buildings.Fluid.HeatExchangers.AdiabaticPads.BaseClasses.Characteristics.PressureParameters
+    pressure(
+      v={0},
+      dp={20}) "Pressure vs. air speed";
 
   annotation (
   defaultComponentPrefixes = "parameter",
