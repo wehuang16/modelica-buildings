@@ -1,5 +1,5 @@
 within Buildings.Fluid.HeatExchangers.AdiabaticPads.Validation;
-model AdiabaticPad
+model AdiabaticPad "Single adiabatic pad"
   extends Modelica.Icons.Example;
   package MediumAir = Buildings.Media.Air;
   package MediumWater = Buildings.Media.Water;
@@ -99,5 +99,12 @@ equation
       StartTime=18144000,
       StopTime=18230400,
       Interval=60,
-      __Dymola_Algorithm="Dassl"));
+      __Dymola_Algorithm="Dassl"),
+    Documentation(info="<html>
+<p>
+This model validates the model
+<a href=\"modelica://Buildings.Fluid.HeatExchangers.AdiabaticPads.AdiabaticPad\">
+Buildings.Fluid.HeatExchangers.AdiabaticPads.AdiabaticPad</a>.
+</p>
+</html>"));
 end AdiabaticPad;

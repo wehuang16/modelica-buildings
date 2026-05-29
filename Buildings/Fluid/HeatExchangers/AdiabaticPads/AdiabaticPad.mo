@@ -1,5 +1,5 @@
 within Buildings.Fluid.HeatExchangers.AdiabaticPads;
-model AdiabaticPad
+model AdiabaticPad "Single adiabatic pad"
   extends Buildings.Fluid.Interfaces.PartialTwoPortInterface;
 
   parameter Real satEff = 0.75 "Saturation efficiency";
@@ -146,5 +146,29 @@ equation
           lineColor={0,0,0},
           fillColor={255,255,255},
           fillPattern=FillPattern.Solid)}),                      Diagram(
-        coordinateSystem(preserveAspectRatio=false)));
+        coordinateSystem(preserveAspectRatio=false)),
+    Documentation(info="<html>
+<p>
+This model represents a single adiabatic pad in adiabatic air-cooled heat exchangers. The adiabatic pad is
+wetted with water. When incoming air flows through the wetted adiabatic pad, some water 
+evaporates into the air adiabatically, causing the mass fraction of water vapor in the air stream 
+to increase, and the dry bulb temperature of the air stream to decrease. 
+The wet bulb temperature of the air stream stays the same.  
+</p>
+
+<p>
+This model uses one performance map of saturation efficiency versus air speed and another performance map
+of pressure drop versus air speed. Equation for saturation efficiency is 
+<code>eff = (TDryBulIn - TDryBulOut) / (TDryBulIn - TWetBulIn)</code>.
+</p>
+
+<p>
+The airflow rate is calculated by multiplying air speed with the face area of the adiabatic pad. 
+</p>
+
+<p>
+This model works with both forward airflow and reverse airflow. Multiple copies of this model can be connected
+in series to represent the series installation of multiple adiabatic pads.
+</p>
+</html>"));
 end AdiabaticPad;
