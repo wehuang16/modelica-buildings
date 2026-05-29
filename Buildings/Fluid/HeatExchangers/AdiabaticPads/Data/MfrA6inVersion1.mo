@@ -1,10 +1,10 @@
 within Buildings.Fluid.HeatExchangers.AdiabaticPads.Data;
-record Pad1 "Fan data for Greenheck 12 BIDW fan"
+record MfrA6inVersion1 "Fan data for Greenheck 12 BIDW fan"
   extends Buildings.Fluid.HeatExchangers.AdiabaticPads.Data.Generic(
-    efficiency(v={0.941802252816019,1.41392017800028,1.88603810318454,2.36058962592129,
-          2.82784035600056,3.30239187873731,3.77450980392156,4.17118620497844},
-        eta={2684.68468468468,2671.17117117117,2536.03603603603,2186.93693693693,
-          1698.19819819819,1191.44144144144,581.081081081081,0}));
+    efficiency(v={0,1.27, 1.524, 1.778, 2.032, 2.2352, 2.5146, 2.7686, 3.0226,
+       3.302,  3.556,355.6},
+        eta={0.819,0.744, 0.731, 0.714, 0.695, 0.681, 0.664, 0.66,  0.647, 0.634,
+       0.623,5.56788318e-13}));
 
   annotation (
 defaultComponentPrefixes="parameter",
@@ -17,4 +17,4 @@ See the documentation of
 Buildings.Fluid.Movers.Data.Fans.Greenheck</a>.
 </p>
 </html>"));
-end Pad1;
+end MfrA6inVersion1;
