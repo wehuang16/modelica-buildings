@@ -7,7 +7,9 @@ model AdiabaticPad "Single adiabatic pad"
       Buildings.Media.Antifreeze.PropyleneGlycolWater (property_T=273.15+50, X_a=
             0.4);
   Buildings.Fluid.HeatExchangers.AdiabaticPads.AdiabaticPad adiabaticPad1(redeclare package Medium =
-        MediumAir, m_flow_nominal=1)
+        MediumAir, m_flow_nominal=1,
+    redeclare Buildings.Fluid.HeatExchangers.AdiabaticPads.Data.MfrA6inVersion1
+      per)
     annotation (Placement(transformation(extent={{-26,-18},{-6,2}})));
   Buildings.Controls.OBC.CDL.Reals.Sources.Sin
                                    sin(
@@ -62,7 +64,9 @@ model AdiabaticPad "Single adiabatic pad"
         rotation=0,
         origin={26,-6})));
   Buildings.Fluid.HeatExchangers.AdiabaticPads.AdiabaticPad adiabaticPad2(redeclare package Medium =
-        MediumAir, m_flow_nominal=1)
+        MediumAir, m_flow_nominal=1,
+    redeclare Buildings.Fluid.HeatExchangers.AdiabaticPads.Data.MfrA6inVersion1
+      per)
     annotation (Placement(transformation(extent={{48,-18},{68,2}})));
 equation
   connect(temOut.port_b, boundary1.ports[1]) annotation (Line(points={{100,12},

@@ -8,7 +8,7 @@ record Generic "Generic data record for movers"
     Buildings.Fluid.HeatExchangers.AdiabaticPads.BaseClasses.Characteristics.saturationEfficiencyParameters
     efficiency(
       v={0},
-      eta={0.9}) "Total or hydraulic efficiency vs. volumetric flow rate";
+      eta={0.8}) "Total or hydraulic efficiency vs. volumetric flow rate";
 
 
   annotation (

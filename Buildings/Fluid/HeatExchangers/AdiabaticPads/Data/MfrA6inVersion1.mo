@@ -1,5 +1,5 @@
 within Buildings.Fluid.HeatExchangers.AdiabaticPads.Data;
-record MfrA6inVersion1 "Fan data for Greenheck 12 BIDW fan"
+record MfrA6inVersion1 "Mfr A 6in Version 1"
   extends Buildings.Fluid.HeatExchangers.AdiabaticPads.Data.Generic(
     efficiency(v={0,1.27, 1.524, 1.778, 2.032, 2.2352, 2.5146, 2.7686, 3.0226,
        3.302,  3.556,355.6},

@@ -2,7 +2,7 @@ within Buildings.Fluid.HeatExchangers.AdiabaticPads;
 model AdiabaticPad "Single adiabatic pad"
   extends Buildings.Fluid.Interfaces.PartialTwoPortInterface;
 
-  parameter Real satEff = 0.75 "Saturation efficiency";
+  Real satEff "Saturation efficiency";
   parameter Real facAre = 0.2 "Face area of the adiabatic pad";
   Real T_a(final unit="K",
     final displayUnit="degC",
@@ -10,6 +10,20 @@ model AdiabaticPad "Single adiabatic pad"
   Real T_b(final unit="K",
     final displayUnit="degC",
     final quantity="ThermodynamicTemperature");
+
+  replaceable parameter Buildings.Fluid.HeatExchangers.AdiabaticPads.Data.Generic per
+    constrainedby Buildings.Fluid.HeatExchangers.AdiabaticPads.Data.Generic
+    "Record with performance data"
+    annotation (choicesAllMatching=true,
+      Placement(transformation(extent={{52,60},{72,80}})));
+
+  Modelica.Blocks.Sources.RealExpression v_cal(y=abs(port_a.m_flow)/1.2/facAre)
+    "calculation of speed"
+    annotation (Placement(transformation(extent={{-72,-92},{-52,-72}})));
+
+  BaseClasses.PadInterface padInterface(per(
+      final efficiency=per.efficiency))
+    annotation (Placement(transformation(extent={{0,-80},{20,-60}})));
 
 public
 
@@ -56,6 +70,7 @@ protected
     final quantity="ThermodynamicTemperature");
 
 equation
+  satEff = padInterface.eta;
   dp = Modelica.Fluid.Utilities.regStep(
     x=port_a.m_flow,
     y1=25,
@@ -140,6 +155,8 @@ equation
       "Reverting flow occurs even though allowFlowReversal is false");
   end if;
 
+  connect(v_cal.y, padInterface.v) annotation (Line(points={{-51,-82},{-10,-82},
+          {-10,-70},{-2,-70}}, color={0,0,127}));
   annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
           Rectangle(
           extent={{-100,100},{100,-100}},
