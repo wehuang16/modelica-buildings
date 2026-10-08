@@ -1,0 +1,409 @@
+within Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange;
+block Controller
+  "Controller for zone heating or cooling temperature setpoint change"
+
+  parameter Real dTShe(
+    min=0,
+    unit="K",
+    displayUnit="K")
+    "Temperature setpoint change delta for the load-shed mode (positive value)"
+    annotation (Dialog(group="Temperature setpoint parameters"));
+  parameter Real dTReb(
+    min=0,
+    unit="K",
+    displayUnit="K")
+    "Temperature setpoint change delta for the load-rebound mode (positive value)"
+    annotation (Dialog(group="Temperature setpoint parameters"));
+  parameter Real dTSheThr(
+    min=0,
+    unit="K",
+    displayUnit="K")
+    "Threshold of temperature difference to trigger setpoint change during the load-shed mode (positive value)"
+    annotation (Dialog(group="Temperature setpoint parameters"));
+  parameter Real dTSheHys(
+    min=0,
+    unit="K",
+    displayUnit="K")
+    "Hysteresis for the temperature difference during the load-shed mode"
+    annotation (Dialog(tab="Advanced", group="Hysteresis"));
+  parameter Real PBuiHys(
+    min=0,
+    start=1,
+    unit="W")=0.05*PBui_nominal
+    "Hysteresis for the electricity demand of the building"
+    annotation (Dialog(enable = zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_3
+      or zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_4,
+      tab="Advanced", group="Hysteresis"));
+  parameter Real PBui_nominal(
+    min=0,
+    start=1,
+    unit="W")
+    "Nominal electricity demand of the building"
+    annotation (Dialog(enable = zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_3
+      or zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_4,
+      group="Electricity demand parameters"));
+  parameter Real PBuiThrCon(
+    min=0,
+    start=1,
+    unit="W")
+    "Constant threshold for the electricity demand of the building"
+    annotation (Dialog(enable = zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_3,
+      group="Electricity demand parameters"));
+  parameter Real TResInt(
+    min=0,
+    unit="K",
+    displayUnit="K")
+    "Temperature resolution interval used by an external zone temperature controller"
+    annotation (Dialog(group="Temperature setpoint parameters"));
+  parameter Real setChaWaiTim(
+    min=0,
+    unit="s")
+    "Sampling period for the setpoint change";
+  parameter Integer nZon(min=1)
+    "Number of zones in the building";
+  parameter Integer nSel(min=1, max=nZon)
+    "Number of zones to select for prioritization";
+  parameter Buildings.Controls.OBC.DemandFlexibility.Types.AirConditioningMode airConMod
+    "Air conditioning mode";
+  parameter Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant zonConVar
+    "Zone control variant, from Variant 1 through Variant 4";
+
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput TCurZon[nZon](
+    final unit=fill("K",nZon),
+    displayUnit=fill("degC",nZon),
+    final quantity=fill("ThermodynamicTemperature",nZon))
+    "Current zone temperature"
+    annotation (Placement(transformation(extent={{-260,20},{-220,60}}),
+      iconTransformation(extent={{-140,20},{-100,60}})));
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput TCurZonSet[nZon](
+    final unit=fill("K",nZon),
+    displayUnit=fill("degC",nZon),
+    final quantity=fill("ThermodynamicTemperature",nZon))
+    "Current zone temperature setpoint from the external setpoint controller"
+    annotation (Placement(transformation(extent={{-260,-20},{-220,20}}),
+        iconTransformation(extent={{-140,-20},{-100,20}})));
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput TPreTarSet[nZon](
+    final unit=fill("K",nZon),
+    displayUnit=fill("degC",nZon),
+    final quantity=fill("ThermodynamicTemperature",nZon))
+    "Pre-cool or pre-heat target temperature setpoint"
+    annotation (Placement(transformation(extent={{-260,-100},{-220,-60}}),
+      iconTransformation(extent={{-140,-100},{-100,-60}})));
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput TSheTarSet[nZon](
+    final unit=fill("K",nZon),
+    displayUnit=fill("degC",nZon),
+    final quantity=fill("ThermodynamicTemperature",nZon))
+    "Load-shed target temperature setpoint"
+    annotation (Placement(transformation(extent={{-260,-140},{-220,-100}}),
+      iconTransformation(extent={{-140,-140},{-100,-100}})));
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput TDefSet[nZon](
+    final unit=fill("K",nZon),
+    displayUnit=fill("degC",nZon),
+    final quantity=fill("ThermodynamicTemperature",nZon))
+    "Default temperature setpoint"
+    annotation (Placement(transformation(extent={{-260,-180},{-220,-140}}),
+        iconTransformation(extent={{-140,-180},{-100,-140}})));
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput PBuiThrVar(
+    final unit="W",
+    final quantity="Power")
+    if zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_4
+    "Variable threshold for the electricity demand of the building"
+    annotation (Placement(transformation(extent={{-260,60},{-220,100}}),
+        iconTransformation(extent={{-140,60},{-100,100}})));
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput PBui(
+    final unit="W",
+    final quantity="Power")
+    if zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_3
+      or zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_4
+    "Electricity demand of the building"
+    annotation (Placement(transformation(extent={{-260,100},{-220,140}}),
+        iconTransformation(extent={{-140,100},{-100,140}})));
+  Buildings.Controls.OBC.CDL.Interfaces.BooleanInput rouZonFla[nZon]
+    "Flags for rogue zones; true if the corresponding zone is a rogue zone"
+    annotation (Placement(transformation(extent={{-260,140},{-220,180}}),
+        iconTransformation(extent={{-140,140},{-100,180}})));
+  Buildings.Controls.OBC.CDL.Interfaces.IntegerInput demFleMod
+    "Demand flexibility mode; 0 = pre-cool or pre-heat, 1 = default, 2 = load-shed, 3 = load-rebound"
+    annotation (Placement(transformation(extent={{-260,-60},{-220,-20}}),
+      iconTransformation(extent={{-140,-60},{-100,-20}})));
+  Buildings.Controls.OBC.CDL.Interfaces.RealOutput TComZonSet[nZon](
+    final unit=fill("K",nZon),
+    displayUnit=fill("degC",nZon),
+    final quantity=fill("ThermodynamicTemperature",nZon))
+    "Commanded zone temperature setpoint to the external setpoint controller to change the current temperature setpoint"
+    annotation (Placement(transformation(extent={{220,-20},{260,20}}),
+        iconTransformation(extent={{100,-20},{140,20}})));
+  Buildings.Controls.OBC.DemandFlexibility.Generic.BooleanPassThrough enaOneZon[nZon] if nZon == 1
+    "When there is only one zone in a building, always enable setpoint change for this zone"
+    annotation (Placement(transformation(extent={{60,120},{80,140}})));
+  Buildings.Controls.OBC.CDL.Logical.Not notEna[nZon] if nZon > 1
+    "Zones are not enabled to participate in zone temperature comparison and zone prioritization"
+    annotation (Placement(transformation(extent={{-20,100},{0,120}})));
+protected
+  Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Enable
+    zonEna(
+    final dTSheThr=dTSheThr,
+    final dTSheHys=dTSheHys,
+    PBuiHys=PBuiHys,
+    PBui_nominal=PBui_nominal,
+    final TResInt=TResInt,
+    final airConMod=airConMod,
+    final use_demCon=zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_3
+         or zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_4,
+    final nZon=nZon) "The zone enablement logic block"
+    annotation (Placement(transformation(extent={{-80,112},{-60,148}})));
+  Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Prioritization
+    zonPri(
+    final nZon=nZon,
+    final airConMod=airConMod)
+    if nZon > 1
+    "The zone prioritization logic block"
+    annotation (Placement(transformation(extent={{60,80},{80,100}})));
+  Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Adjustment
+    zonSetAdj[nZon](
+    final dTShe=fill(dTShe, nZon),
+    final dTReb=fill(dTReb, nZon),
+    final airConMod=fill(airConMod, nZon),
+    final use_mulSteSetCha=fill(zonConVar <> Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_1,
+        nZon)) "The zone setpoint adjustment logic block"
+    annotation (Placement(transformation(extent={{120,-120},{140,-100}})));
+  Buildings.Controls.OBC.CDL.Discrete.Sampler samSetCha[nZon](
+    final samplePeriod=fill(setChaWaiTim,nZon))
+    "Sampling block for the setpoint change"
+    annotation (Placement(transformation(extent={{180,-10},{200,10}})));
+  Buildings.Controls.OBC.CDL.Routing.IntegerScalarReplicator repDemFleMod(
+    final nout=nZon)
+    "Repeat the demand flexibility mode as a vector"
+    annotation (Placement(transformation(extent={{-40,-50},{-20,-30}})));
+  Buildings.Controls.OBC.CDL.Integers.Sources.Constant conNSel(
+    final k=nSel)
+    if nZon>1
+    "A constant for the number of zones to select for prioritization"
+    annotation (Placement(transformation(extent={{0,40},{20,60}})));
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant conPBuiThr(
+    final k=PBuiThrCon)
+    if zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_3
+    "A constant threshold value for the electricity demand of the building"
+    annotation (Placement(transformation(extent={{-180,100},{-160,120}})));
+equation
+  connect(zonPri.yEna, zonSetAdj.uEna) annotation (Line(points={{82,90},{100,90},
+          {100,-101.667},{118,-101.667}}, color={255,0,255}));
+  connect(samSetCha.y, TComZonSet)
+    annotation (Line(points={{202,0},{240,0}}, color={0,0,127}));
+  connect(zonSetAdj.TComZonSet, samSetCha.u) annotation (Line(points={{142,-110},
+          {160,-110},{160,0},{178,0}}, color={0,0,127}));
+  connect(rouZonFla,zonEna. rouZonFla)
+    annotation (Line(points={{-240,160},{-200,160},{-200,146},{-82,146}},
+      color={255,0,255}));
+  connect(PBui,zonEna. PBui)
+    annotation (Line(points={{-240,120},{-200,120},{-200,142},{-82,142}},
+      color={0,0,127}));
+  connect(PBuiThrVar,zonEna. PBuiThr)
+    annotation (Line(points={{-240,80},{-150,80},{-150,138},{-82,138}},
+      color={0,0,127}));
+  connect(TCurZon,zonEna. TZon)
+    annotation (Line(points={{-240,40},{-140,40},{-140,134},{-82,134}},
+      color={0,0,127}));
+  connect(TCurZonSet,zonEna. TZonSet)
+    annotation (Line(points={{-240,0},{-130,0},{-130,130},{-82,130}},
+      color={0,0,127}));
+  connect(demFleMod,zonEna. demFleMod)
+    annotation (Line(points={{-240,-40},{-120,-40},{-120,126},{-82,126}},
+      color={255,127,0}));
+  connect(TPreTarSet,zonEna. TPreTarSet)
+    annotation (Line(points={{-240,-80},{-110,-80},{-110,122},{-82,122}},
+      color={0,0,127}));
+  connect(TSheTarSet,zonEna. TSheTarSet)
+    annotation (Line(points={{-240,-120},{-100,-120},{-100,118},{-82,118}},
+      color={0,0,127}));
+  connect(TDefSet,zonEna. TDefSet)
+    annotation (Line(points={{-240,-160},{-90,-160},{-90,114},{-82,114}},
+      color={0,0,127}));
+  connect(TCurZon, zonPri.TZon)
+    annotation (Line(points={{-240,40},{-140,40},{-140,92},{58,92}},
+      color={0,0,127}));
+  connect(TCurZonSet, zonPri.TZonSet)
+    annotation (Line(points={{-240,0},{-130,0},{-130,88},{58,88}}, color={0,0,127}));
+  connect(demFleMod, repDemFleMod.u)
+    annotation (Line(points={{-240,-40},{-42,-40}},
+      color={255,127,0}));
+  connect(repDemFleMod.y, zonSetAdj.demFleMod) annotation (Line(points={{-18,-40},
+          {80,-40},{80,-105},{118,-105}}, color={255,127,0}));
+  connect(TCurZonSet, zonSetAdj.TCurZonSet) annotation (Line(points={{-240,0},{-130,
+          0},{-130,-108.5},{118,-108.5}},      color={0,0,127}));
+  connect(TPreTarSet, zonSetAdj.TPreTarSet) annotation (Line(points={{-240,-80},
+          {-110,-80},{-110,-111.667},{118,-111.667}}, color={0,0,127}));
+  connect(TSheTarSet, zonSetAdj.TSheTarSet) annotation (Line(points={{-240,-120},
+          {-100,-120},{-100,-115},{118,-115}}, color={0,0,127}));
+  connect(TDefSet, zonSetAdj.TDefSet) annotation (Line(points={{-240,-160},{-90,
+          -160},{-90,-118.333},{118,-118.333}}, color={0,0,127}));
+  connect(conNSel.y, zonPri.nSel)
+    annotation (Line(points={{22,50},{40,50},{40,84},{58,84}}, color={255,127,0}));
+  connect(conPBuiThr.y,zonEna. PBuiThr)
+    annotation (Line(points={{-158,110},{-150,110},{-150,138},{-82,138}},
+      color={0,0,127}));
+  connect(enaOneZon.y, zonSetAdj.uEna) annotation (Line(points={{82,130},{100,
+          130},{100,-101.667},{118,-101.667}}, color={255,0,255}));
+  connect(zonEna.enaFla, notEna.u)
+    annotation (Line(points={{-58,130},{-40,130},{-40,110},{-22,110}},
+      color={255,0,255}));
+  connect(notEna.y, zonPri.disFla)
+    annotation (Line(points={{2,110},{40,110},{40,96},{58,96}}, color={255,0,255}));
+  connect(enaOneZon.u, zonEna.enaFla)
+    annotation (Line(points={{58,130},{-58,130}}, color={255,0,255}));
+  annotation (defaultComponentName="zonTemSetCon",
+    Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-180},{100,180}},
+    grid={2,2}), graphics={Rectangle(
+      extent={{-100,-180},{100,180}},
+      lineColor={0,0,0},
+      fillColor={255,255,255},
+      fillPattern=FillPattern.Solid), Text(
+      extent={{-100,222},{100,182}},
+      textColor={0,0,255},
+          textString="%name")}), Diagram(
+    coordinateSystem(preserveAspectRatio=false, extent={{-220,-180},{220,180}},
+    grid={2,2})),
+    Documentation(revisions="<html>
+<ul>
+<li>
+July 17, 2026, by Weiping Huang:<br/>
+First implementation.
+</li>
+</ul>
+</html>", info="<html>
+<p>
+This block performs zone temperature setpoint change for either the heating
+(<code>airConMod = Heating</code>) or the cooling (<code>airConMod = Cooling</code>)
+setpoints of all zones in a building. This block first checks whether a
+zone is enabled for setpoint change, then prioritizes setpoint change for certain
+zones based on the difference between the current zone temperature and the current
+zone temperature setpoint, and finally executes the setpoint change operation by
+outputting new setpoints.
+</p>
+<h4>Parameter Definitions</h4>
+<p>
+The zone control variant parameter <code>zonConVar</code> in this block can have
+<i>4</i> different values based on enumeration, from Variant <i>1</i> through
+Variant <i>4</i>. Refer to the documentation of
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant\">
+Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant</a>
+for more information on these <i>4</i> variants.
+</p>
+<p>
+The demand flexibility mode input <code>demFleMod</code> can be: <i>0</i> (pre-cool
+or pre-heat mode), <i>1</i> (default mode), <i>2</i> (load-shed mode), and <i>3</i>
+(load-rebound mode).
+</p>
+<p>
+The input current setpoint <code>TCurZonSet</code> and the commanded setpoint
+<code>TComZonSet</code> must be heating setpoints if the sequence is used for
+heating mode and they must be cooling setpoints if it is used for cooling mode.
+</p>
+<p>
+The internal variable zone temperature difference <code>dTZon</code>, is defined as
+the current temperature <code>TCurZon</code> minus the current temperature
+setpoint <code>TCurZonSet</code> if it is in the heating mode, and it is defined as
+<code>TCurZonSet</code> minus <code>TCurZon</code> if it is in the cooling mode. 
+</p>
+<h4>Zone Enablement</h4>
+<p>
+This block checks whether each zone is enabled for setpoint change. Refer to
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Enable\">
+Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Enable</a>
+for more detailed description.
+</p>
+<p>
+Note that if <code>zonConVar</code> has a value of Variant <i>3</i> or Variant
+<i>4</i>, the use-demand-control parameter <code>use_demCon</code> of the zone
+enablement subsequence will be <code>true</code>. Otherwise, <code>use_demCon</code>
+will be <code>false</code>.
+</p>
+<h4>Zone Prioritization</h4>
+<p>
+For all zones that are enabled for setpoint change, this block ranks the enabled
+zones based on the zone temperature difference <code>dTZon</code>, then prioritizes
+<code>nSel</code> enabled zones with the smallest <code>dTZon</code> to execute the
+setpoint change operation. Thus, the setpoint change operation will only be executed
+for zones that are both enabled and prioritized. Refer to
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Prioritization\">
+Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Prioritization</a>
+for more detailed description.
+</p>
+<p>
+If the number of zones <code>nZon</code> is equal to <i>1</i>, zone prioritization
+will not be necessary. The setpoint change operation will be executed for this
+single zone as long as this zone is enabled for such operation.
+</p>
+<h4>Zone Setpoint Adjustment</h4>
+<p>
+This block executes setpoint change by outputting new setpoints. Refer to
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Adjustment\">
+Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Adjustment</a>
+for more detailed description.
+</p>
+<p>
+Note that if <code>zonConVar</code> has a value of Variant <i>1</i>, the
+multiple-step setpoint change flag parameter <code>use_mulSteSetCha</code> within
+the zone setpoint adjustment subsequence will be <code>false</code>. Otherwise, the
+<code>use_mulSteSetCha</code> will be <code>true</code>.
+</p>
+<h4>Aggregated Behaviors</h4>
+<p>
+The parameter <code>setChaWaiTim</code> is the setpoint change wait time, which
+specifies the time interval on how often the setpoint change operation is executed.
+</p>
+<p>
+In the zone enablement subsequence, one condition to enable setpoint change is that
+the zone temperature setpoint has not reached a setpoint limit that is imposed by the
+respective demand flexibility mode. Since the setpoint change operation will only be
+executed for <code>nSel</code> enabled zones with the smallest <code>dTZon</code>,
+there is a chance that the zone temperature setpoint of a zone has reached a
+temperature setpoint limit, but this zone still has one of the smallest
+<code>dTZon</code> values. This zone enablement condition helps remove this zone
+from the list of enabled zones and let other zones become the <code>nSel</code>
+enabled zones. Without this zone enablement condition, this block will get stuck by
+always prioritizing this zone for setpoint change without moving on to other zones,
+even though this zone can no longer change its setpoint past the setpoint limit.
+</p>
+<p>
+Since the <code>nSel</code> enabled zones with the smallest <code>dTZon</code> will
+be selected for the setpoint change operation, it in turn changes the value of
+<code>TComZonSet</code> and <code>TCurZonSet</code>, thus <code>dTZon</code> itself
+is changed. This has different implications during different demand flexibility modes
+(<code>demFleMod</code>). Below is a table that summarizes these different
+implications:
+</p>
+<table summary=\"summary\" border=\"1\">
+<tr>
+<th>demFleMod</th>
+<th>Implications of zone temperature difference</th>
+</tr>
+<tr>
+<td>0</td>
+<td>Setpoint change will cause <code>dTZon</code> to be more negative, making a zone
+to continuously be selected for setpoint change until the zone setpoint has reached
+the pre-heat or pre-cool setpoint limit. This makes the zones with the largest
+pre-heat or pre-cool energy consumption potential to be selected first, while zones
+with a smaller energy consumption potential will be selected later. This makes the
+total electricity demand of all zones flatter with fewer spikes.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Setpoint change will cause the <code>dTZon</code> to be more positive, making
+way for other zones to be selected for setpoint change. This will result in the
+<code>dTZon</code> across all zones to have similar, and hopefully positive, values.
+Thus, the maximum amount of the electricity demand of the building will be reduced.
+</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Setpoint change will cause <code>dTZon</code> to be more negative, making a zone
+to continuously be selected for setpoint change until the zone setpoint has reached
+the load-rebound setpoint limit. This makes the zones with the largest load-rebound
+energy consumption potential to be selected first, while zones with a smaller energy
+consumption potential will be selected later. This makes the total electricity
+demand of all zones flatter with fewer spikes.</td>
+</tr>
+</table>
+</html>"));
+end Controller;

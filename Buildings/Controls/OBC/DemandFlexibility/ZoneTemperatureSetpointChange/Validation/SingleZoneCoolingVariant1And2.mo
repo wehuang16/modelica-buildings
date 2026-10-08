@@ -1,6 +1,6 @@
 within Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Validation;
 model SingleZoneCoolingVariant1And2
-  "Validation model for single zone cooling temperature setpoint change with Variant 1 and 2"
+  "Validation model for single-zone cooling temperature setpoint change with Variant 1 and 2"
 
   Buildings.Controls.OBC.CDL.Discrete.UnitDelay delTZonSetVar1(
     samplePeriod=10,
@@ -8,9 +8,7 @@ model SingleZoneCoolingVariant1And2
     "Emulates an external zone temperature setpoint controller that has a small delay of setpoint change after a new setpoint is received; used for Variant 1 of zone control"
     annotation (Placement(transformation(extent={{-10,-10},{10,10}}, rotation=0,
       origin={50,70})));
-  Buildings.Controls.OBC.CDL.Logical.Sources.Constant conRouZonFla(
-    k=false)
-    "Boolean constant for the rogue zone flag"
+  Buildings.Controls.OBC.CDL.Logical.Sources.Pulse rouZonFla(period=172800) "Rogue zone flag"
     annotation (Placement(transformation(extent={{-120,100},{-100,120}})));
   Buildings.Controls.OBC.CDL.Integers.Sources.TimeTable tabDemFleMod(
     table=[0,1; 14,0; 16,2; 21,3; 23,1; 24,1],
@@ -18,7 +16,7 @@ model SingleZoneCoolingVariant1And2
     period=86400)
     "A table of demand flexibility modes that repeat every day"
     annotation (Placement(transformation(extent={{-120,-20},{-100,0}})));
-  Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.ZoneSetpointGeneration zonSetGen(
+  Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Setpoints zonSetGen(
     TDefOccHeaSet=273.15 + 20,
     TDefUnoHeaSet=273.15 + 12,
     TDefOccCooSet=273.15 + 24,
@@ -32,14 +30,14 @@ model SingleZoneCoolingVariant1And2
     setChaEnaUnoFla=true)
     "Block to generate zone setpoints and setpoint targets that vary with time"
     annotation (Placement(transformation(extent={{-120,-140},{-100,-120}})));
-  Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.HeatingOrCooling setChaConCooVar1(
+  Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Controller setChaConCooVar1(
     dTShe=0.5,
     dTReb=0.5,
     dTSheThr=0.5,
     dTSheHys=0.5,
     TResInt=0.5,
-    samPerSetCha=300,
-    airConMod=false,
+    setChaWaiTim=300,
+    airConMod=Buildings.Controls.OBC.DemandFlexibility.Types.AirConditioningMode.Cooling,
     nZon=1,
     nSel=1,
     zonConVar=Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_1)
@@ -58,14 +56,14 @@ model SingleZoneCoolingVariant1And2
     "Emulates an external zone temperature setpoint controller that has a small delay of setpoint change after a new setpoint is received; used for Variant 2 of zone control"
     annotation (Placement(transformation(extent={{-10,-10},{10,10}}, rotation=0,
       origin={50,-70})));
-  Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.HeatingOrCooling setChaConCooVar2(
+  Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Controller setChaConCooVar2(
     dTShe=0.5,
     dTReb=0.5,
     dTSheThr=0.5,
     dTSheHys=0.5,
     TResInt=0.5,
-    samPerSetCha=300,
-    airConMod=false,
+    setChaWaiTim=300,
+    airConMod=Buildings.Controls.OBC.DemandFlexibility.Types.AirConditioningMode.Cooling,
     nZon=1,
     nSel=1,
     zonConVar=Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_2)
@@ -94,7 +92,7 @@ equation
   connect(tabDemFleMod.y[1], setChaConCooVar1.demFleMod)
     annotation (Line(points={{-98,-10},{-60,-10},{-60,66},{-2,66}},
       color={255,127,0}));
-  connect(conRouZonFla.y, setChaConCooVar1.rouZonFla[1])
+  connect(rouZonFla.y, setChaConCooVar1.rouZonFla[1])
     annotation (Line(points={{-98,110},{-50,110},{-50,86},{-2,86}},
       color={255,0,255}));
   connect(tabTCurZon.y[1], setChaConCooVar1.TCurZon[1])
@@ -108,7 +106,7 @@ equation
   connect(zonSetGen.TDefCooSet, setChaConCooVar2.TDefSet[1])
     annotation (Line(points={{-98,-140},{-20,-140},{-20,-86},{-2,-86}},
       color={0,0,127}));
-  connect(conRouZonFla.y, setChaConCooVar2.rouZonFla[1])
+  connect(rouZonFla.y, setChaConCooVar2.rouZonFla[1])
     annotation (Line(points={{-98,110},{-50,110},{-50,-54},{-2,-54}},
       color={255,0,255}));
   connect(tabTCurZon.y[1], setChaConCooVar2.TCurZon[1])
@@ -124,8 +122,7 @@ equation
   connect(delTZonSetVar1.y, setResVar1.uSet)
     annotation (Line(points={{62,70},{78,70}}, color={0,0,127}));
   connect(setResVar1.ySet, setChaConCooVar1.TCurZonSet[1])
-    annotation (Line(points={{102,70},{120,70},{120,40},{-10,40},{-10,70},{-2,
-          70}},
+    annotation (Line(points={{102,70},{120,70},{120,40},{-10,40},{-10,70},{-2,70}},
       color={0,0,127}));
   connect(delTZonSetVar2.y, setResVar2.uSet)
     annotation (Line(points={{62,-70},{78,-70}}, color={0,0,127}));
@@ -138,33 +135,11 @@ equation
   Documentation(info="<html>
 <p>
 This example validates
-<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.HeatingOrCooling\">
-Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.HeatingOrCooling</a>
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Controller\">
+Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Controller</a>
 for the cooling operation of a single zone building under Variant <i>1</i> and
-Variant <i>2</i> of zone temperature setpoint control.
-</p>
-<p>
-In this validation example, the single zone in the building is assumed to not be a
-rogue zone. A table of daily demand flexibility modes and a daily current zone
-temperature profile are provided as inputs. Two <code>HeatingOrCooling</code>
-controller blocks are used to represent Variant <i>1</i> and Variant <i>2</i> each.
-Two <code>UnitDelay</code> blocks emulate external zone temperature setpoint
-controllers that have a small delay of setpoint change after a new setpoint is
-received. Two <code>SetpointResolution</code> blocks emulate temperature setpoint
-resolution in the external zone temperature setpoint controllers. The
-<code>zonSetGen</code> block generates zone setpoints and setpoint targets in such a
-way that the setpoint change is active not only in the occupied mode, but also in
-the unoccupied mode.
-</p>
-<p>
-This validation example shows how the <code>HeatingOrCooling</code> controllers
-respond to each of the demand flexibility modes, including the pre-cool mode, the
-default mode, the load-shed mode, and the load-rebound mode, under Variant <i>1</i>
-and Variant <i>2</i>. The <code>HeatingOrCooling</code> controller under Variant
-<i>1</i> changes the zone cooling temperature setpoint in a single step for each of
-the demand flexibility modes, whereas the <code>HeatingOrCooling</code> controller
-under Variant <i>2</i> changes the zone cooling temperature setpoint in multiple
-smaller steps.
+Variant <i>2</i> of zone temperature setpoint control while responding to a rogue
+zone flag signal.
 </p>
 </html>",revisions="<html>
 <ul>

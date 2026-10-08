@@ -8,112 +8,120 @@ block SelectLargestValues "Select largest values"
 
   Buildings.Controls.OBC.CDL.Interfaces.RealInput u[nVal]
     "A vector of all values"
-    annotation (Placement(transformation(extent={{-320,-20},{-280,20}}),
+    annotation (Placement(transformation(extent={{-240,90},{-200,130}}),
         iconTransformation(extent={{-140,-20},{-100,20}})));
   Buildings.Controls.OBC.CDL.Interfaces.BooleanInput disFla[nVal]
-    "A flag vector to disqualify certain values from comparison"
-    annotation (Placement(transformation(extent={{-320,40},{-280,80}}),
+    "A flag vector to exclude values from comparison. Set to true if the value should be excluded"
+    annotation (Placement(transformation(extent={{-240,-20},{-200,20}}),
         iconTransformation(extent={{-140,40},{-100,80}})));
   Buildings.Controls.OBC.CDL.Interfaces.IntegerInput nSel
     "Number of largest values to select"
-    annotation (Placement(transformation(extent={{-320,-80},{-280,-40}}),
+    annotation (Placement(transformation(extent={{-240,-140},{-200,-100}}),
         iconTransformation(extent={{-140,-80},{-100,-40}})));
   Buildings.Controls.OBC.CDL.Interfaces.BooleanOutput y[nVal]
     "True: the value is one of the largest values"
-    annotation (Placement(transformation(extent={{280,-20},{320,20}}),
+    annotation (Placement(transformation(extent={{200,-20},{240,20}}),
         iconTransformation(extent={{100,-20},{140,20}})));
 protected
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant conNumSeq[nVal](
-    final k={i for i in 1:nVal})
-    "A numerical sequence from one up to the number of values"
-    annotation (Placement(transformation(extent={{-260,-40},{-240,-20}})));
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant numSeq[nVal](
+    final k={i for i in nVal:-1:1})
+    "A descending numerical sequence from the number of values down to one"
+    annotation (Placement(transformation(extent={{-160,40},{-140,60}})));
   Buildings.Controls.OBC.CDL.Reals.MultiplyByParameter scaSmaNum[nVal](
     final k=fill(smaNum, nVal))
     "Scale the numerical sequence with a small number"
-    annotation (Placement(transformation(extent={{-220,-40},{-200,-20}})));
+    annotation (Placement(transformation(extent={{-120,40},{-100,60}})));
   Buildings.Controls.OBC.CDL.Reals.Add addSmaNum[nVal]
     "Add different small numbers to input values to allow ranking of equal input values"
-    annotation (Placement(transformation(extent={{-180,0},{-160,20}})));
-  Buildings.Controls.OBC.CDL.Routing.RealExtractor extNSel(final nin=nVal)
+    annotation (Placement(transformation(extent={{-60,70},{-40,90}})));
+  Buildings.Controls.OBC.CDL.Routing.RealExtractor extNSel(
+    final nin=nVal)
     "Extract the n-th largest value, where n equals the number of largest values to select"
-    annotation (Placement(transformation(extent={{80,0},{100,20}})));
-  Buildings.Controls.OBC.CDL.Routing.RealScalarReplicator nSelValRep(final nout=nVal)
+    annotation (Placement(transformation(extent={{-40,-100},{-20,-80}})));
+  Buildings.Controls.OBC.CDL.Routing.RealScalarReplicator nSelValRep(
+    final nout=nVal)
     "Replicate the n-th largest value into a vector, where n equals the number of largest values to select"
-    annotation (Placement(transformation(extent={{120,0},{140,20}})));
+    annotation (Placement(transformation(extent={{0,-100},{20,-80}})));
   Buildings.Controls.OBC.CDL.Reals.Less lesNSelVal[nVal]
     "Check whether the input value is less than the n-th largest value, where n equals the number of largest values to select"
-    annotation (Placement(transformation(extent={{160,-40},{180,-20}})));
+    annotation (Placement(transformation(extent={{60,-70},{80,-50}})));
   Buildings.Controls.OBC.CDL.Logical.Not notLesNSelVal[nVal]
     "Check whether the input value is greater than or equal to the n-th largest value, where n equals the number of largest values to select"
-    annotation (Placement(transformation(extent={{200,-40},{220,-20}})));
+    annotation (Placement(transformation(extent={{100,-70},{120,-50}})));
   Buildings.Controls.OBC.CDL.Logical.Not notDisFla[nVal]
     "The disqualified flag is not active"
-    annotation (Placement(transformation(extent={{60,50},{80,70}})));
+    annotation (Placement(transformation(extent={{-100,-10},{-80,10}})));
   Buildings.Controls.OBC.CDL.Logical.And andNotDisFla[nVal]
     "The disqualified flag must not be true to qualify as one of the largest values"
-    annotation (Placement(transformation(extent={{240,-10},{260,10}})));
-  Buildings.Controls.OBC.CDL.Reals.MultiMin mulMin(nin=nVal)
+    annotation (Placement(transformation(extent={{160,-10},{180,10}})));
+  Buildings.Controls.OBC.CDL.Reals.MultiMin mulMin(
+    final nin=nVal)
     "Minimum of all values"
-    annotation (Placement(transformation(extent={{-140,20},{-120,40}})));
-  Buildings.Controls.OBC.CDL.Reals.AddParameter subOne(final p=-1)
+    annotation (Placement(transformation(extent={{0,70},{20,90}})));
+  Buildings.Controls.OBC.CDL.Reals.AddParameter subOne(
+    final p=-1)
     "Subtract one to the minimum value"
-    annotation (Placement(transformation(extent={{-100,20},{-80,40}})));
+    annotation (Placement(transformation(extent={{40,70},{60,90}})));
   Buildings.Controls.OBC.CDL.Reals.Switch swi[nVal]
     "True to pass a small value; false to pass the input value"
-    annotation (Placement(transformation(extent={{0,0},{20,20}})));
-  Buildings.Controls.OBC.CDL.Routing.RealScalarReplicator minRep(final nout=nVal)
+    annotation (Placement(transformation(extent={{-120,-100},{-100,-80}})));
+  Buildings.Controls.OBC.CDL.Routing.RealScalarReplicator minRep(
+    final nout=nVal)
     "Replicate the minimum value minus one into a vector"
-    annotation (Placement(transformation(extent={{-60,20},{-40,40}})));
-  Buildings.Controls.OBC.CDL.Reals.Sort sort(final ascending=false, nin=nVal)
+    annotation (Placement(transformation(extent={{80,70},{100,90}})));
+  Buildings.Controls.OBC.CDL.Reals.Sort sort(
+    final ascending=false,
+    final nin=nVal)
     "Output the sorted input values in descending order"
-    annotation (Placement(transformation(extent={{40,0},{60,20}})));
+    annotation (Placement(transformation(extent={{-80,-100},{-60,-80}})));
 equation
   connect(disFla, notDisFla.u)
-    annotation (Line(points={{-300,60},{58,60}}, color={255,0,255}));
+    annotation (Line(points={{-220,0},{-102,0}}, color={255,0,255}));
   connect(notDisFla.y, andNotDisFla.u1)
-    annotation (Line(points={{82,60},{200,60},{200,0},{238,0}}, color={255,0,255}));
+    annotation (Line(points={{-78,0},{158,0}}, color={255,0,255}));
   connect(andNotDisFla.y, y)
-    annotation (Line(points={{262,0},{300,0}}, color={255,0,255}));
+    annotation (Line(points={{182,0},{220,0}}, color={255,0,255}));
   connect(mulMin.y,subOne. u)
-    annotation (Line(points={{-118,30},{-102,30}}, color={0,0,127}));
+    annotation (Line(points={{22,80},{38,80}}, color={0,0,127}));
   connect(disFla, swi.u2)
-    annotation (Line(points={{-300,60},{-20,60},{-20,10},{-2,10}},
+    annotation (Line(points={{-220,0},{-160,0},{-160,-90},{-122,-90}},
       color={255,0,255}));
   connect(minRep.y, swi.u1)
-    annotation (Line(points={{-38,30},{-10,30},{-10,18},{-2,18}}, color={0,0,127}));
+    annotation (Line(points={{102,80},{120,80},{120,-30},{-140,-30},{-140,-82},{
+          -122,-82}}, color={0,0,127}));
   connect(swi.y, sort.u)
-    annotation (Line(points={{22,10},{38,10}},color={0,0,127}));
+    annotation (Line(points={{-98,-90},{-82,-90}}, color={0,0,127}));
   connect(subOne.y, minRep.u)
-    annotation (Line(points={{-78,30},{-62,30}}, color={0,0,127}));
-  connect(conNumSeq.y, scaSmaNum.u)
-    annotation (Line(points={{-238,-30},{-222,-30}}, color={0,0,127}));
+    annotation (Line(points={{62,80},{78,80}}, color={0,0,127}));
+  connect(numSeq.y, scaSmaNum.u)
+    annotation (Line(points={{-138,50},{-122,50}}, color={0,0,127}));
   connect(scaSmaNum.y, addSmaNum.u2)
-    annotation (Line(points={{-198,-30},{-190,-30},{-190,4},{-182,4}},
+    annotation (Line(points={{-98,50},{-80,50},{-80,74},{-62,74}},
       color={0,0,127}));
   connect(u, addSmaNum.u1)
-    annotation (Line(points={{-300,0},{-240,0},{-240,16},{-182,16}},
+    annotation (Line(points={{-220,110},{-80,110},{-80,86},{-62,86}},
       color={0,0,127}));
   connect(addSmaNum.y, swi.u3)
-    annotation (Line(points={{-158,10},{-60,10},{-60,2},{-2,2}}, color={0,0,127}));
+    annotation (Line(points={{-38,80},{-20,80},{-20,-20},{-150,-20},{-150,-98},
+      {-122,-98}}, color={0,0,127}));
   connect(addSmaNum.y, mulMin.u)
-    annotation (Line(points={{-158,10},{-150,10},{-150,30},{-142,30}},
-      color={0,0,127}));
+    annotation (Line(points={{-38,80},{-2,80}}, color={0,0,127}));
   connect(nSel, extNSel.index)
-    annotation (Line(points={{-300,-60},{90,-60},{90,-2}}, color={255,127,0}));
+    annotation (Line(points={{-220,-120},{-30,-120},{-30,-102}},color={255,127,0}));
   connect(sort.y, extNSel.u)
-    annotation (Line(points={{62,10},{78,10}}, color={0,0,127}));
+    annotation (Line(points={{-58,-90},{-42,-90}}, color={0,0,127}));
   connect(extNSel.y, nSelValRep.u)
-    annotation (Line(points={{102,10},{118,10}}, color={0,0,127}));
+    annotation (Line(points={{-18,-90},{-2,-90}},color={0,0,127}));
   connect(nSelValRep.y, lesNSelVal.u2)
-    annotation (Line(points={{142,10},{150,10},{150,-38},{158,-38}},
+    annotation (Line(points={{22,-90},{40,-90},{40,-68},{58,-68}},
       color={0,0,127}));
   connect(addSmaNum.y, lesNSelVal.u1)
-    annotation (Line(points={{-158,10},{-60,10},{-60,-30},{158,-30}},
+    annotation (Line(points={{-38,80},{-20,80},{-20,-60},{58,-60}},
       color={0,0,127}));
   connect(lesNSelVal.y, notLesNSelVal.u)
-    annotation (Line(points={{182,-30},{198,-30}}, color={255,0,255}));
+    annotation (Line(points={{82,-60},{98,-60}}, color={255,0,255}));
   connect(notLesNSelVal.y, andNotDisFla.u2)
-    annotation (Line(points={{222,-30},{230,-30},{230,-8},{238,-8}},
+    annotation (Line(points={{122,-60},{140,-60},{140,-8},{158,-8}},
       color={255,0,255}));
   annotation (defaultComponentName="selLarVal",
     Icon(coordinateSystem(preserveAspectRatio=false,
@@ -127,21 +135,27 @@ equation
       textColor={0,0,255},
           textString="%name")}), Diagram(
     coordinateSystem(preserveAspectRatio=false,
-    extent={{-280,-100},{280,100}},
+    extent={{-200,-140},{200,140}},
     grid={2,2})),
     Documentation(info="<html>
 <p>
 This block selects the <code>nSel</code> largest values out of a total of
 <code>nVal</code> values from the input vector <code>u</code>. The output is a
-boolean vector, where <code>true</code> means a value at the corresponding index is
-one of the largest values, and <code>false</code> means otherwise.
+boolean vector <code>y</code>, where <code>true</code> means a value at the
+corresponding index is one of the largest values, and <code>false</code> means
+otherwise.
 </p>
 <p>
-The disqualified flag vector <code>disFla</code> serves to disqualify certain values
-in the input vector from large-value comparison by changing these values to a small
-number. If the number of values that do not have the disqualified flag is smaller
-than <code>nSel</code>, the final number of selected largest values will be smaller
-than <code>nSel</code>.
+If there are equal values from the input vector <code>u</code>, this block will
+prioritize values that appear first in the input vector <code>u</code> when
+selecting the <code>nSel</code> largest values.
+</p>
+<p>
+Setting the disabled flag vector <code>disFla=true</code> serves to exclude certain
+values in the input vector from the ranking of the largest values. These values will
+have the boolean output <code>y=false</code>. If total number of values after the
+excluding is less than <code>nSel</code>, the remaining values will have the boolean
+output <code>y = true</code>.
 </p>
 </html>", revisions="<html>
 <ul>

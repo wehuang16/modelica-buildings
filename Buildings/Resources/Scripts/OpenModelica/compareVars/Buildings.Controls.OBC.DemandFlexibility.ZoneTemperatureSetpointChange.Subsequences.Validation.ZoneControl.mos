@@ -1,9 +1,0 @@
-compareVars :=
-  {
-    "zonConSinSte.TCurZonSet",
-    "zonConSinSte.TComZonSet",
-    "zonConMulSte.TCurZonSet",
-    "zonConMulSte.TComZonSet",
-    "tabDemFleMod.y[1]",
-    "uEnaVar.y"
-  };
