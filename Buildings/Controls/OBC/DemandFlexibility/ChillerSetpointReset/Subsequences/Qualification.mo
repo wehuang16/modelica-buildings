@@ -14,6 +14,8 @@ block Qualification "Qualification"
     unit="W")=0.05*PBuiRed_nominal
     "Hysteresis for the electricity demand reduction of the building";
 
+  CDL.Interfaces.BooleanOutput y annotation (Placement(transformation(extent={{
+            40,20},{80,60}}), iconTransformation(extent={{-268,-50},{-228,-10}})));
   annotation (defaultComponentName="booPasThr",
     Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}},
     grid={2,2}), graphics={Rectangle(
