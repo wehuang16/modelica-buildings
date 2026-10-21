@@ -2,30 +2,42 @@ within Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange;
 block Controller
   "Controller for zone heating or cooling temperature setpoint change"
 
+  parameter Real dTPre(
+    min=0,
+    start=1,
+    unit="K",
+    displayUnit="K")
+    "Setpoint change delta for the pre-cool or the pre-heat mode (positive value)"
+    annotation (Dialog(enable=zonConVar <> Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_1,
+      group="Temperature setpoint parameters"));
   parameter Real dTShe(
     min=0,
+    start=1,
     unit="K",
     displayUnit="K")
     "Temperature setpoint change delta for the load-shed mode (positive value)"
-    annotation (Dialog(group="Temperature setpoint parameters"));
+    annotation (Dialog(enable=zonConVar <> Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_1,
+      group="Temperature setpoint parameters"));
   parameter Real dTReb(
     min=0,
+    start=1,
     unit="K",
     displayUnit="K")
     "Temperature setpoint change delta for the load-rebound mode (positive value)"
-    annotation (Dialog(group="Temperature setpoint parameters"));
+    annotation (Dialog(enable=zonConVar <> Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_1,
+      group="Temperature setpoint parameters"));
+  parameter Real dT_small(
+    min=0,
+    unit="K",
+    displayUnit="K")=0.1
+    "A small temperature delta, used to reduce the effects of rounding errors when comparing the current zone temperature setpoint to the target setpoints"
+    annotation (Dialog(tab="Advanced", group="Temperature setpoint parameters"));
   parameter Real dTSheThr(
     min=0,
     unit="K",
     displayUnit="K")
     "Threshold of temperature difference to trigger setpoint change during the load-shed mode (positive value)"
     annotation (Dialog(group="Temperature setpoint parameters"));
-  parameter Real dTSheHys(
-    min=0,
-    unit="K",
-    displayUnit="K")
-    "Hysteresis for the temperature difference during the load-shed mode"
-    annotation (Dialog(tab="Advanced", group="Hysteresis"));
   parameter Real PBuiHys(
     min=0,
     start=1,
@@ -49,12 +61,6 @@ block Controller
     "Constant threshold for the electricity demand of the building"
     annotation (Dialog(enable = zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_3,
       group="Electricity demand parameters"));
-  parameter Real TResInt(
-    min=0,
-    unit="K",
-    displayUnit="K")
-    "Temperature resolution interval used by an external zone temperature controller"
-    annotation (Dialog(group="Temperature setpoint parameters"));
   parameter Real setChaWaiTim(
     min=0,
     unit="s")
@@ -143,10 +149,9 @@ protected
   Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Enable
     zonEna(
     final dTSheThr=dTSheThr,
-    final dTSheHys=dTSheHys,
-    PBuiHys=PBuiHys,
-    PBui_nominal=PBui_nominal,
-    final TResInt=TResInt,
+    final PBuiHys=PBuiHys,
+    final PBui_nominal=PBui_nominal,
+    final dT_small=dT_small,
     final airConMod=airConMod,
     final use_demCon=zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_3
          or zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_4,
@@ -161,6 +166,7 @@ protected
     annotation (Placement(transformation(extent={{60,80},{80,100}})));
   Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Adjustment
     zonSetAdj[nZon](
+    final dTPre=fill(dTPre, nZon),
     final dTShe=fill(dTShe, nZon),
     final dTReb=fill(dTReb, nZon),
     final airConMod=fill(airConMod, nZon),
@@ -291,7 +297,7 @@ for more information on these <i>4</i> variants.
 </p>
 <p>
 The demand flexibility mode input <code>demFleMod</code> can be: <i>0</i> (pre-cool
-or pre-heat mode), <i>1</i> (default mode), <i>2</i> (load-shed mode), and <i>3</i>
+or pre-heat mode), <i>1</i> (default mode), <i>2</i> (load-shed mode), or <i>3</i>
 (load-rebound mode).
 </p>
 <p>
@@ -300,10 +306,10 @@ The input current setpoint <code>TCurZonSet</code> and the commanded setpoint
 heating mode and they must be cooling setpoints if it is used for cooling mode.
 </p>
 <p>
-The internal variable zone temperature difference <code>dTZon</code>, is defined as
-the current temperature <code>TCurZon</code> minus the current temperature
-setpoint <code>TCurZonSet</code> if it is in the heating mode, and it is defined as
-<code>TCurZonSet</code> minus <code>TCurZon</code> if it is in the cooling mode. 
+The internal variable zone temperature difference <code>dTZon</code> is defined as
+the current zone temperature <code>TCurZon</code> minus the current zone temperature
+setpoint <code>TCurZonSet</code> in the heating mode, and as
+<code>TCurZonSet</code> minus <code>TCurZon</code> in the cooling mode.
 </p>
 <h4>Zone Enablement</h4>
 <p>
@@ -350,7 +356,7 @@ the zone setpoint adjustment subsequence will be <code>false</code>. Otherwise, 
 <h4>Aggregated Behaviors</h4>
 <p>
 The parameter <code>setChaWaiTim</code> is the setpoint change wait time, which
-specifies the time interval on how often the setpoint change operation is executed.
+specifies the time interval at which the setpoint change operation is executed.
 </p>
 <p>
 In the zone enablement subsequence, one condition to enable setpoint change is that
@@ -360,16 +366,16 @@ executed for <code>nSel</code> enabled zones with the smallest <code>dTZon</code
 there is a chance that the zone temperature setpoint of a zone has reached a
 temperature setpoint limit, but this zone still has one of the smallest
 <code>dTZon</code> values. This zone enablement condition helps remove this zone
-from the list of enabled zones and let other zones become the <code>nSel</code>
+from the list of enabled zones and lets other zones become the <code>nSel</code>
 enabled zones. Without this zone enablement condition, this block will get stuck by
 always prioritizing this zone for setpoint change without moving on to other zones,
 even though this zone can no longer change its setpoint past the setpoint limit.
 </p>
 <p>
-Since the <code>nSel</code> enabled zones with the smallest <code>dTZon</code> will
-be selected for the setpoint change operation, it in turn changes the value of
-<code>TComZonSet</code> and <code>TCurZonSet</code>, thus <code>dTZon</code> itself
-is changed. This has different implications during different demand flexibility modes
+Since the setpoint change operation is executed for the <code>nSel</code> enabled
+zones with the smallest <code>dTZon</code>, it changes the values of
+<code>TComZonSet</code> and <code>TCurZonSet</code>, and thus <code>dTZon</code>
+itself changes. This has different implications during different demand flexibility modes
 (<code>demFleMod</code>). Below is a table that summarizes these different
 implications:
 </p>
@@ -380,29 +386,25 @@ implications:
 </tr>
 <tr>
 <td>0</td>
-<td>Setpoint change will cause <code>dTZon</code> to be more negative, making a zone
-to continuously be selected for setpoint change until the zone setpoint has reached
-the pre-heat or pre-cool setpoint limit. This makes the zones with the largest
-pre-heat or pre-cool energy consumption potential to be selected first, while zones
-with a smaller energy consumption potential will be selected later. This makes the
-total electricity demand of all zones flatter with fewer spikes.</td>
+<td>Setpoint adjustment makes <code>dTZon</code> more negative, so the controller
+continues selecting the same zone until its setpoint reaches the pre-heat or pre-cool
+limit. This selects zones with the largest pre-heat or pre-cool energy consumption
+potential first and flattens the total electricity demand across zones.</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Setpoint change will cause the <code>dTZon</code> to be more positive, making
-way for other zones to be selected for setpoint change. This will result in the
-<code>dTZon</code> across all zones to have similar, and hopefully positive, values.
-Thus, the maximum amount of the electricity demand of the building will be reduced.
+<td>Setpoint adjustment makes <code>dTZon</code> more positive, so the controller
+selects other zones for setpoint change. This results in <code>dTZon</code> having
+similar, and hopefully positive, values across all zones. Thus, this reduces the
+peak electricity demand of the building.
 </td>
 </tr>
 <tr>
 <td>3</td>
-<td>Setpoint change will cause <code>dTZon</code> to be more negative, making a zone
-to continuously be selected for setpoint change until the zone setpoint has reached
-the load-rebound setpoint limit. This makes the zones with the largest load-rebound
-energy consumption potential to be selected first, while zones with a smaller energy
-consumption potential will be selected later. This makes the total electricity
-demand of all zones flatter with fewer spikes.</td>
+<td>Setpoint adjustment makes <code>dTZon</code> more negative, so the controller
+continues selecting the same zone until its setpoint reaches the load-rebound limit.
+This selects zones with the largest load-rebound energy consumption potential first
+and flattens the total electricity demand across zones.</td>
 </tr>
 </table>
 </html>"));
