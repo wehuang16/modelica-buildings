@@ -3,10 +3,10 @@ model Setpoints "Zone setpoint generation"
 
   Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Setpoints
     zonSetGenDayEnaUno(
-    TDefOccHeaSet=273.15 + 20,
-    TDefUnoHeaSet=273.15 + 12,
-    TDefOccCooSet=273.15 + 24,
-    TDefUnoCooSet=273.15 + 32,
+    TDefOccHeaSet=293.15,
+    TDefUnoHeaSet=285.15,
+    TDefOccCooSet=297.15,
+    TDefUnoCooSet=305.15,
     dTSheHeaSet=4,
     dTSheCooSet=4,
     dTPreHeaSet=1.5,
@@ -18,10 +18,10 @@ model Setpoints "Zone setpoint generation"
     annotation (Placement(transformation(extent={{0,60},{20,80}})));
   Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Setpoints
     zonSetGenDayDisUno(
-    TDefOccHeaSet=273.15 + 20,
-    TDefUnoHeaSet=273.15 + 12,
-    TDefOccCooSet=273.15 + 24,
-    TDefUnoCooSet=273.15 + 32,
+    TDefOccHeaSet=293.15,
+    TDefUnoHeaSet=285.15,
+    TDefOccCooSet=297.15,
+    TDefUnoCooSet=305.15,
     dTSheHeaSet=4,
     dTSheCooSet=4,
     dTPreHeaSet=1.5,
@@ -33,10 +33,10 @@ model Setpoints "Zone setpoint generation"
     annotation (Placement(transformation(extent={{0,0},{20,20}})));
   Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Setpoints
     zonSetGenNigEnaUno(
-    TDefOccHeaSet=273.15 + 20,
-    TDefUnoHeaSet=273.15 + 12,
-    TDefOccCooSet=273.15 + 24,
-    TDefUnoCooSet=273.15 + 32,
+    TDefOccHeaSet=293.15,
+    TDefUnoHeaSet=285.15,
+    TDefOccCooSet=297.15,
+    TDefUnoCooSet=305.15,
     dTSheHeaSet=4,
     dTSheCooSet=4,
     dTPreHeaSet=1.5,
@@ -55,7 +55,7 @@ This example validates
 <a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Setpoints\">
 Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Setpoints</a>
 by comparing the zone setpoints and setpoint targets during daytime occupancy vs.
-nighttime occupancy,  as well as for enabled unoccupied period setpoint change and
+nighttime occupancy, as well as for enabled unoccupied period setpoint change and
 disabled unoccupied period setpoint change.
 </p>
 </html>", revisions="<html>

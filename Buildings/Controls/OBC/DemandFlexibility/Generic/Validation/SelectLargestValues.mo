@@ -1,8 +1,8 @@
 within Buildings.Controls.OBC.DemandFlexibility.Generic.Validation;
 model SelectLargestValues "Select largest values"
 
-  Buildings.Controls.OBC.DemandFlexibility.Generic.SelectLargestValues  selLarVal(
-    nVal=5) "Block to select largest values"
+  cdl_models.DemandFlexibility.Generic.SelectLargestValues selLarVal(nVal=5)
+    "Block to select largest values"
     annotation (Placement(transformation(extent={{60,0},{80,20}})));
   Buildings.Controls.OBC.CDL.Reals.Sources.Constant con2[4](k={13,5,2,3})
     "A vector of four real constants"
@@ -40,7 +40,7 @@ annotation (experiment(StopTime=1, Interval=60, Tolerance=1e-06),
   Documentation(info="<html>
 <p>
 This example validates
-<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.Generic.SelectLargestValues\">
+<a href=\"modelica://cdl_models.DemandFlexibility.Generic.SelectLargestValues\">
 Buildings.Controls.OBC.DemandFlexibility.Generic.SelectLargestValues</a>.
 </p>
 </html>", revisions="<html>

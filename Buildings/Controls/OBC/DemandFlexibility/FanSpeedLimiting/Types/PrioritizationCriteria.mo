@@ -6,7 +6,7 @@ type PrioritizationCriteria = enumeration(
   annotation (Documentation(revisions="<html>
 <ul>
 <li>
-September 02, 2026, by Weiping Huang:<br/>
+October 21, 2026, by Weiping Huang:<br/>
 First implementation.
 </li>
 </ul>

@@ -1,9 +1,10 @@
 within Buildings.Controls.OBC.DemandFlexibility.FanSpeedLimiting.Subsequences;
 block LowerUpperBound "Lower upper bound"
 
-  parameter Real TResInt(
-    min=0)
-    "Temperature resolution interval used by an external zone temperature controller"
+  parameter Real fanSpeDel_small(
+    min=0,
+    unit="1")=0.005
+    "A small fan speed delta, used to reduce the effects of rounding errors when comparing the current fan speed command to the target fan speed"
     annotation (Dialog(group="Temperature setpoint parameters"));
   Buildings.Controls.OBC.CDL.Interfaces.IntegerInput demFleMod
     "Demand flexibility mode; 0 = pre-cool or pre-heat, 1 = default, 2 = load-shed, 3 = load-rebound"
@@ -46,30 +47,30 @@ protected
     final k=Buildings.Controls.OBC.DemandFlexibility.Types.DemandFlexibilityModes.loadRebound)
     "Integer constant for the load-rebound mode"
     annotation (Placement(transformation(extent={{-100,40},{-80,60}})));
-  Buildings.Controls.OBC.CDL.Reals.AddParameter addTResIntSheHea[nAHU](
-    final p=fill(0.99*TResInt, nAHU))
-    "Add 0.99 times the temperature resolution interval during the heating load-shed mode"
+  Buildings.Controls.OBC.CDL.Reals.AddParameter addFanSpeDelShe[nAHU](final p=
+        fill(fanSpeDel_small, nAHU))
+    "Add a small fan speed delta during the load-shed mode"
     annotation (Placement(transformation(extent={{-120,-80},{-100,-60}})));
-  Buildings.Controls.OBC.CDL.Reals.Less lesTSetSheHea[nAHU](
-    final h=fill(0.5*TResInt, nAHU))
-    "The zone heating temperature setpoint is less than the load-shed heating target temperature setpoint, taking into account of the temperature resolution"
+  Buildings.Controls.OBC.CDL.Reals.Less lesFanSpeLimTarShe[nAHU](final h=fill(
+        0.5*fanSpeDel_small, nAHU))
+    "The fan speed command is less than the load-shed target fan speed limit during the load-shed mode"
     annotation (Placement(transformation(extent={{-40,-60},{-20,-40}})));
-  Buildings.Controls.OBC.CDL.Reals.AddParameter subTResIntRebHea[nAHU](
-    final p=fill(-0.99*TResInt, nAHU))
-    "Subtract 0.99 times the temperature resolution interval during the heating load-rebound mode"
+  Buildings.Controls.OBC.CDL.Reals.AddParameter subFanSpeDelReb[nAHU](final p=
+        fill(-fanSpeDel_small, nAHU))
+    "Subtract a small fan speed delta during the load-rebound mode"
     annotation (Placement(transformation(extent={{-120,-40},{-100,-20}})));
-  Buildings.Controls.OBC.CDL.Reals.Greater greTSetRebHea[nAHU](
-    final h=fill(0.5*TResInt, nAHU))
-    "The zone heating temperature setpoint is greater than the default heating temperature setpoint during the load-rebound mode, taking into account of the temperature resolution"
+  Buildings.Controls.OBC.CDL.Reals.Greater greFanSpeLimDefReb[nAHU](final h=
+        fill(0.5*fanSpeDel_small, nAHU))
+    "The fan speed command is greater than the default fan speed limit during the load-rebound mode"
     annotation (Placement(transformation(extent={{-40,-20},{-20,0}})));
-  Buildings.Controls.OBC.CDL.Logical.And reaTSheTarSet[nAHU]
-    "In the load-shed mode, the zone temperature setpoint has reached the load-shed target temperature setpoint"
+  Buildings.Controls.OBC.CDL.Logical.And reaFanSpeLimTarShe[nAHU]
+    "In the load-shed mode, the fan speed command has reached the load-shed target fan speed limit"
     annotation (Placement(transformation(extent={{80,-80},{100,-60}})));
-  Buildings.Controls.OBC.CDL.Logical.And reaTDefSet[nAHU]
-    "In the load-rebound mode, the zone temperature setpoint has reached the default temperature setpoint"
+  Buildings.Controls.OBC.CDL.Logical.And reaFanSpeLimDef[nAHU]
+    "In the load-rebound mode, the fan speed command has reached the default fan speed limit"
     annotation (Placement(transformation(extent={{80,0},{100,20}})));
   Buildings.Controls.OBC.CDL.Logical.Or orReaLimSheReb[nAHU]
-    "The zone temperature setpoint has reached a setpoint limit during the load-shed mode and the load-rebound mode"
+    "The fan speed command has reached a fan speed limit during the load-shed mode and the load-rebound mode"
     annotation (Placement(transformation(extent={{140,-40},{160,-20}})));
 equation
   connect(demFleMod, intEquShe.u1) annotation (Line(points={{-220,80},{-130,80},
@@ -88,37 +89,33 @@ equation
     annotation (Line(points={{-18,30},{-2,30}}, color={255,0,255}));
   connect(intEquReb.y, booScaRepReb.u)
     annotation (Line(points={{-18,70},{18,70}}, color={255,0,255}));
-  connect(fanSpeLimCur, greTSetRebHea.u1) annotation (Line(points={{-220,20},{-160,
-          20},{-160,-10},{-42,-10}},
-                                   color={0,0,127}));
-  connect(fanSpeLimDef, subTResIntRebHea.u) annotation (Line(points={{-220,-20},
-          {-180,-20},{-180,-30},{-122,-30}},
-                                          color={0,0,127}));
-  connect(subTResIntRebHea.y, greTSetRebHea.u2) annotation (Line(points={{-98,-30},
-          {-68,-30},{-68,-18},{-42,-18}},
-                                     color={0,0,127}));
-  connect(fanSpeLimCur, lesTSetSheHea.u1) annotation (Line(points={{-220,20},{-160,
-          20},{-160,-50},{-42,-50}},   color={0,0,127}));
-  connect(fanSpeLimTarShe, addTResIntSheHea.u) annotation (Line(points={{-220,-60},
-          {-180,-60},{-180,-70},{-122,-70}},   color={0,0,127}));
-  connect(addTResIntSheHea.y, lesTSetSheHea.u2) annotation (Line(points={{-98,-70},
-          {-68,-70},{-68,-58},{-42,-58}},
-                                       color={0,0,127}));
-  connect(booScaRepReb.y, reaTDefSet.u1) annotation (Line(points={{42,70},{60,70},
-          {60,10},{78,10}},         color={255,0,255}));
-  connect(greTSetRebHea.y, reaTDefSet.u2) annotation (Line(points={{-18,-10},{60,
-          -10},{60,2},{78,2}}, color={255,0,255}));
-  connect(booScaRepShe.y, reaTSheTarSet.u1) annotation (Line(points={{22,30},{40,
-          30},{40,-70},{78,-70}}, color={255,0,255}));
-  connect(lesTSetSheHea.y, reaTSheTarSet.u2) annotation (Line(points={{-18,-50},
-          {20,-50},{20,-78},{78,-78}}, color={255,0,255}));
-  connect(reaTDefSet.y, orReaLimSheReb.u1) annotation (Line(points={{102,10},{120,
-          10},{120,-30},{138,-30}}, color={255,0,255}));
-  connect(reaTSheTarSet.y, orReaLimSheReb.u2) annotation (Line(points={{102,-70},
-          {120,-70},{120,-38},{138,-38}}, color={255,0,255}));
+  connect(fanSpeLimCur, greFanSpeLimDefReb.u1) annotation (Line(points={{-220,
+          20},{-160,20},{-160,-10},{-42,-10}}, color={0,0,127}));
+  connect(fanSpeLimDef, subFanSpeDelReb.u) annotation (Line(points={{-220,-20},{
+          -180,-20},{-180,-30},{-122,-30}}, color={0,0,127}));
+  connect(subFanSpeDelReb.y, greFanSpeLimDefReb.u2) annotation (Line(points={{-98,
+          -30},{-68,-30},{-68,-18},{-42,-18}}, color={0,0,127}));
+  connect(fanSpeLimCur, lesFanSpeLimTarShe.u1) annotation (Line(points={{-220,
+          20},{-160,20},{-160,-50},{-42,-50}}, color={0,0,127}));
+  connect(fanSpeLimTarShe, addFanSpeDelShe.u) annotation (Line(points={{-220,-60},
+          {-180,-60},{-180,-70},{-122,-70}}, color={0,0,127}));
+  connect(addFanSpeDelShe.y, lesFanSpeLimTarShe.u2) annotation (Line(points={{-98,
+          -70},{-68,-70},{-68,-58},{-42,-58}}, color={0,0,127}));
+  connect(booScaRepReb.y, reaFanSpeLimDef.u1) annotation (Line(points={{42,70},
+          {60,70},{60,10},{78,10}}, color={255,0,255}));
+  connect(greFanSpeLimDefReb.y, reaFanSpeLimDef.u2) annotation (Line(points={{-18,
+          -10},{60,-10},{60,2},{78,2}}, color={255,0,255}));
+  connect(booScaRepShe.y, reaFanSpeLimTarShe.u1) annotation (Line(points={{22,
+          30},{40,30},{40,-70},{78,-70}}, color={255,0,255}));
+  connect(lesFanSpeLimTarShe.y, reaFanSpeLimTarShe.u2) annotation (Line(points=
+          {{-18,-50},{20,-50},{20,-78},{78,-78}}, color={255,0,255}));
+  connect(reaFanSpeLimDef.y, orReaLimSheReb.u1) annotation (Line(points={{102,
+          10},{120,10},{120,-30},{138,-30}}, color={255,0,255}));
+  connect(reaFanSpeLimTarShe.y, orReaLimSheReb.u2) annotation (Line(points={{
+          102,-70},{120,-70},{120,-38},{138,-38}}, color={255,0,255}));
   connect(orReaLimSheReb.y, reach_lowUppBou) annotation (Line(points={{162,-30},
           {180,-30},{180,0},{220,0}}, color={255,0,255}));
-  annotation (defaultComponentName="booPasThr",
+  annotation (defaultComponentName="lowUppBou",
     Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}},
     grid={2,2}), graphics={Rectangle(
       extent={{-100,100},{100,-100}},
@@ -134,7 +131,7 @@ equation
     Documentation(revisions="<html>
 <ul>
 <li>
-August 18, 2026, by Weiping Huang:<br/>
+October 21, 2026, by Weiping Huang:<br/>
 First implementation.
 </li>
 </ul>

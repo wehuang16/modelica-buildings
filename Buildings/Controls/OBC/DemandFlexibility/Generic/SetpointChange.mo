@@ -141,14 +141,14 @@ output is <code>y = min(uAllMaxSet, max(uAllMinSet, uCurSet))</code>.
 </li>
 </ul>
 <p>
-Note that the output <code>y</code> is intended to be received by a downstream
-setpoint controller, which will process the setpoint change and pass its new
-setpoint back to <code>uCurSet</code>, completing a full control loop.
+Note that a downstream setpoint controller receives the new setpoint <code>y</code>,
+updates the zone setpoint, and feeds the updated setpoint back to
+<code>uCurSet</code> to complete the control loop.
 </p>
 </html>",revisions="<html>
 <ul>
 <li>
-June 01, 2026, by Weiping Huang:<br/>
+June 1, 2026, by Weiping Huang:<br/>
 First implementation.
 </li>
 </ul>

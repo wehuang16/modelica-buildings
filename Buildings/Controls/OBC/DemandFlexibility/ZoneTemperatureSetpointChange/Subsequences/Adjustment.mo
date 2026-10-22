@@ -1,6 +1,13 @@
 within Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences;
 block Adjustment "Zone setpoint adjustment"
 
+  parameter Real dTPre(
+    min=0,
+    start=1,
+    unit="K",
+    displayUnit="K")
+    "Setpoint change delta for the pre-cool or the pre-heat mode (positive value)"
+    annotation (Dialog(enable = use_mulSteSetCha));
   parameter Real dTShe(
     min=0,
     start=1,
@@ -16,7 +23,7 @@ block Adjustment "Zone setpoint adjustment"
     "Setpoint change delta for the load-rebound mode (positive value)"
     annotation (Dialog(enable = use_mulSteSetCha));
   parameter Boolean use_mulSteSetCha
-    "If true, there are multiple smaller and incremental setpoint change steps for the load-shed mode and the load-rebound mode; if false, there is a single setpoint change step";
+    "If true, there are multiple smaller and incremental setpoint change steps for the pre-cool/pre-heat mode, the load-shed mode, and the load-rebound mode; if false, there is a single setpoint change step";
   parameter Buildings.Controls.OBC.DemandFlexibility.Types.AirConditioningMode airConMod
     "Air conditioning mode";
 
@@ -117,8 +124,9 @@ protected
     "Error message for the load-shed target cooling temperature setpoint during the cooling mode"
     annotation (Placement(transformation(extent={{80,-260},{100,-240}})));
   Buildings.Controls.OBC.DemandFlexibility.Generic.SetpointChange setChaPre(
+    final setChaDel=dTPre,
     final ascSet=airConMod == Buildings.Controls.OBC.DemandFlexibility.Types.AirConditioningMode.Heating,
-    final use_mulSteSetCha=false)
+    final use_mulSteSetCha=use_mulSteSetCha)
     "Setpoint change logic for the pre-cool or the pre-heat mode"
     annotation (Placement(transformation(extent={{40,240},{60,260}})));
   Buildings.Controls.OBC.DemandFlexibility.Generic.SetpointChange setChaShe(
@@ -290,7 +298,7 @@ change enabling signal input and the demand flexibility mode.
 <p>
 The input <code>TCurZonSet</code> represents the current value of the
 temperature setpoint and the output <code>TComZonSet</code> is the
-new temperature setpoint. 
+new temperature setpoint.
 If the sequence is used for the heating mode (<code>airConMod = Heating</code>), the
 <code>TCurZonSet</code> and <code>TComZonSet</code> must be the heating setpoints.
 If the sequence is used for the cooling mode (<code>airConMod = Cooling</code>), the
@@ -299,7 +307,7 @@ If the sequence is used for the cooling mode (<code>airConMod = Cooling</code>),
 <p>
 The demand flexibility mode input <code>demFleMod</code> can be: <i>0</i>
 (pre-cool or pre-heat mode), <i>1</i> (default mode), <i>2</i> (load-shed mode), or
-<i>3</i> (load-rebound mode). 
+<i>3</i> (load-rebound mode).
 </p>
 <p>
 This block conducts a setpoint change to output the commanded zone temperature
@@ -316,13 +324,13 @@ setpoint <code>TComZonSet</code> as follows if the multiple-step setpoint change
 <tr>
 <td>0</td>
 <td>Heating</td>
-<td>TPreTarSet</td>
+<td>min(TPreTarSet, max(TDefSet, TCurZonSet+dTPre))</td>
 <td>min(TPreTarSet, max(TDefSet, TCurZonSet))</td>
 </tr>
 <tr>
 <td>0</td>
 <td>Cooling</td>
-<td>TPreTarSet</td>
+<td>min(TDefSet, max(TPreTarSet, TCurZonSet-dTPre))</td>
 <td>min(TDefSet, max(TPreTarSet, TCurZonSet))</td>
 </tr>
 <tr>
@@ -431,7 +439,7 @@ Note:
 <code>TPreTarSet &gt;= TDefSet &gt;= TSheTarSet</code> must hold if the air
 conditioning system is in the heating mode (<code>airConMod = Heating</code>), and
 <code>TPreTarSet &lt;= TDefSet &lt;= TSheTarSet</code> must hold if the air
-conditioning system is in the cooling mode (<code>airConMod = Cooling</code>). 
+conditioning system is in the cooling mode (<code>airConMod = Cooling</code>).
 </li>
 <li>
 The output <code>TComZonSet</code> is intended to be received by a
@@ -441,9 +449,9 @@ full control loop.
 </li>
 <li>
 Within each demand flexibility mode, the changes of both
-<code>TCurZonSet</code> and <code>TComZonSet</code> will have only one direction:
-either increasing or decreasing. The direction could only be changed after the
-demand flexibility mode is changed.
+<code>TCurZonSet</code> and <code>TComZonSet</code> will occur in only one direction:
+either increasing or decreasing. The direction can only change when the
+demand flexibility mode changes.
 </li>
 </ul>
 </html>", revisions="<html>

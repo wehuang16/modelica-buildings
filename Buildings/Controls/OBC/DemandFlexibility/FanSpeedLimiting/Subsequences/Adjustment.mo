@@ -104,7 +104,7 @@ equation
           {-40,-40},{-40,-110},{-22,-110}}, color={0,0,127}));
   connect(fanSpeLimTarShe, lesFanSpeLimTarShe.u2) annotation (Line(points={{-120,
           -80},{-60,-80},{-60,-118},{-22,-118}}, color={0,0,127}));
-  annotation (defaultComponentName="booPasThr",
+  annotation (defaultComponentName="adj",
     Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}},
     grid={2,2}), graphics={Rectangle(
       extent={{-100,100},{100,-100}},
@@ -120,7 +120,7 @@ equation
     Documentation(revisions="<html>
 <ul>
 <li>
-August 18, 2026, by Weiping Huang:<br/>
+October 21, 2026, by Weiping Huang:<br/>
 First implementation.
 </li>
 </ul>
