@@ -115,7 +115,7 @@ equation
           102,-70},{120,-70},{120,-38},{138,-38}}, color={255,0,255}));
   connect(orReaLimSheReb.y, reach_lowUppBou) annotation (Line(points={{162,-30},
           {180,-30},{180,0},{220,0}}, color={255,0,255}));
-  annotation (defaultComponentName="booPasThr",
+  annotation (defaultComponentName="lowUppBou",
     Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}},
     grid={2,2}), graphics={Rectangle(
       extent={{-100,100},{100,-100}},

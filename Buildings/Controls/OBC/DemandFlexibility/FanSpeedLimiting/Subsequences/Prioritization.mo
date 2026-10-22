@@ -44,7 +44,7 @@ equation
           -6},{-2,-6}}, color={255,127,0}));
   connect(selLarVal.y, yEna)
     annotation (Line(points={{22,0},{120,0}}, color={255,0,255}));
-  annotation (defaultComponentName="booPasThr",
+  annotation (defaultComponentName="pri",
     Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}},
     grid={2,2}), graphics={Rectangle(
       extent={{-100,100},{100,-100}},
