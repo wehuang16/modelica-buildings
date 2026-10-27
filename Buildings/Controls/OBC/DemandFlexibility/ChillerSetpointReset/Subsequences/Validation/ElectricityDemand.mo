@@ -1,14 +1,38 @@
 within Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.Validation;
-model ElectricityDemand "ElectricityDemand"
+model ElectricityDemand "Validation model for the electricity demand check"
 
-annotation (experiment(StopTime=60, Interval=1, Tolerance=1e-06),
+  Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectricityDemand eleDem(
+    final PBuiRedDifMin=10000,
+    final PBuiRed_nominal=100000)
+    "Electricity demand check"
+    annotation (Placement(transformation(extent={{40,-20},{80,20}})));
+
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant PBuiRedTar(
+    final k=100000)
+    "Target electricity demand reduction"
+    annotation (Placement(transformation(extent={{-60,30},{-40,50}})));
+
+  Buildings.Controls.OBC.CDL.Reals.Sources.Sin PBuiRed(
+    final amplitude=50000,
+    final freqHz=1/3600,
+    final offset=90000)
+    "Actual electricity demand reduction"
+    annotation (Placement(transformation(extent={{-60,-50},{-40,-30}})));
+
+equation
+  connect(PBuiRedTar.y, eleDem.PBuiRedTar)
+    annotation (Line(points={{-38,40},{0,40},{0,12},{36,12}}, color={0,0,127}));
+  connect(PBuiRed.y, eleDem.PBuiRed)
+    annotation (Line(points={{-38,-40},{0,-40},{0,-12},{36,-12}}, color={0,0,127}));
+
+annotation (experiment(StopTime=7200, Interval=1, Tolerance=1e-06),
   __Dymola_Commands(file="modelica://Buildings/Resources/Scripts/Dymola/Controls/OBC/DemandFlexibility/ChillerSetpointReset/Subsequences/Validation/ElectricityDemand.mos"
     "Simulate and plot"),
   Documentation(info="<html>
 <p>
 This example validates
-<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectrictyDemand\">
-Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectrictyDemand</a>.
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectricityDemand\">
+Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectricityDemand</a>.
 </p>
 </html>", revisions="<html>
 <ul>
