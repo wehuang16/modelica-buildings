@@ -1,5 +1,8 @@
 within Buildings.Controls.OBC.DemandFlexibility.FanSpeedLimiting.Subsequences;
 block Prioritization "Prioritization"
+
+  parameter Integer nAHU(min=1)
+    "Number of air handling units";
   parameter Real fanSiz[nAHU](each start=0)
     "Fan size; can be in any unit, but a larger value should represent a larger fan"
     annotation (Dialog(enable =priCri == Buildings.Controls.OBC.DemandFlexibility.FanSpeedLimiting.Types.PrioritizationCriteria.FanSize));

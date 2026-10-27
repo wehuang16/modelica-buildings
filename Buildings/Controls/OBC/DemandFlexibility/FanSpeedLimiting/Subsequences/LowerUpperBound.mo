@@ -1,6 +1,8 @@
 within Buildings.Controls.OBC.DemandFlexibility.FanSpeedLimiting.Subsequences;
 block LowerUpperBound "Lower upper bound"
 
+  parameter Integer nAHU(min=1)
+    "Number of air handling units";
   parameter Real fanSpeDel_small(
     min=0,
     unit="1")=0.005
