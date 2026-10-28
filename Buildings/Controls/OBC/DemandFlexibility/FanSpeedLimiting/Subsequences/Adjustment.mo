@@ -15,8 +15,6 @@ block Adjustment "Adjustment"
     annotation (Dialog(enable = use_mulSteSetCha));
   parameter Boolean use_mulSteSetCha
     "If true, there are multiple smaller and incremental setpoint change steps for the load-shed mode and the load-rebound mode; if false, there is a single setpoint change step";
-  parameter Integer nAHU(min=1)
-    "Number of air handling units";
 
   Buildings.Controls.OBC.CDL.Interfaces.BooleanInput uEna
     "True: enable setpoint change" annotation (Placement(transformation(extent={

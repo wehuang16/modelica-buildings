@@ -1,20 +1,108 @@
 within Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences;
 block Adjustment "Adjustment"
 
-  parameter Real PBuiRedDifMin(
-    final unit="W",
-    final quantity="Power")
-    "Minimum difference between the electricity demand reduction target and the actual electricity demand reduction of the building";
-  parameter Real PBuiRed_nominal(
+  parameter Real dTChiSetShe(
     min=0,
-    unit="W")
-    "Nominal electricity demand reduction of the building";
-  parameter Real PBuiRedHys(
+    start=0.5,
+    unit="1")
+    "Fan speed limit change amount for the load-shed mode (positive value)"
+    annotation (Dialog(enable = use_mulSteSetCha));
+  parameter Real dTChiSetReb(
     min=0,
-    unit="W")=0.05*PBuiRed_nominal
-    "Hysteresis for the electricity demand reduction of the building";
+    start=0.5,
+    unit="1")
+    "Fan speed limit change amount for the load-rebound mode (positive value)"
+    annotation (Dialog(enable = use_mulSteSetCha));
+  parameter Boolean use_mulSteSetCha
+    "If true, there are multiple smaller and incremental setpoint change steps for the load-shed mode and the load-rebound mode; if false, there is a single setpoint change step";
 
-  annotation (defaultComponentName="booPasThr",
+  Buildings.Controls.OBC.CDL.Interfaces.BooleanInput uEna
+    "True: enable setpoint change" annotation (Placement(transformation(extent={
+            {-140,60},{-100,100}}), iconTransformation(extent={{-140,20},{-100,60}})));
+  Buildings.Controls.OBC.CDL.Interfaces.IntegerInput demFleMod
+    "Demand flexibility mode; 0 = pre-cool or pre-heat, 1 = default, 2 = load-shed, 3 = load-rebound"
+    annotation (Placement(transformation(extent={{-140,20},{-100,60}}),
+      iconTransformation(extent={{-140,60},{-100,100}})));
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput TChiSetCur(
+    unit="1")
+    "Current chilled water temperature setpoint" annotation (Placement(transformation(extent={{
+            -140,-20},{-100,20}}), iconTransformation(extent={{-140,-20},{-100,20}})));
+  Buildings.Controls.OBC.CDL.Interfaces.RealOutput TChiSetCom(
+    unit="1")
+    "Commanded chilled water temperature setpoint" annotation (Placement(transformation(extent={{100,-20},
+            {140,20}}),         iconTransformation(extent={{100,-20},{140,20}})));
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput TChiSetDef(
+    unit="1")
+    "Default chilled water temperature setpoint" annotation (Placement(transformation(extent={{
+            -140,-60},{-100,-20}}), iconTransformation(extent={{-140,-60},{-100,
+            -20}})));
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput TChiSetTarShe(
+    unit="1")
+    "Target chilled water temperature setpoint for the load-shed mode" annotation (Placement(
+        transformation(extent={{-140,-100},{-100,-60}}), iconTransformation(
+          extent={{-140,-100},{-100,-60}})));
+protected
+  Buildings.Controls.OBC.DemandFlexibility.Generic.SetpointChange setChaShe(
+    final setChaDel=dTChiSetShe,
+    final ascSet=true,
+    final use_mulSteSetCha=use_mulSteSetCha)
+    "Setpoint change logic for the load-shed mode"
+    annotation (Placement(transformation(extent={{0,60},{20,80}})));
+  Buildings.Controls.OBC.DemandFlexibility.Generic.SetpointChange setChaReb(
+    final setChaDel=dTChiSetReb,
+    final ascSet=false,
+    final use_mulSteSetCha=use_mulSteSetCha)
+    "Setpoint change logic for the load-rebound mode"
+    annotation (Placement(transformation(extent={{0,-60},{20,-40}})));
+  Buildings.Controls.OBC.DemandFlexibility.Generic.RealValueSelectionByMode TChiSetSelByMod(
+    final use_pre=false)
+    "Output the corresponding commanded zone temperature setpoint value based on the demand flexibility mode"
+    annotation (Placement(transformation(extent={{60,-10},{80,10}})));
+  Buildings.Controls.OBC.CDL.Reals.Less lesTChiSetTarShe
+    "Check if the pre-heat target temperature setpoint is less than the default temperature setpoint"
+    annotation (Placement(transformation(extent={{-20,-120},{0,-100}})));
+  Buildings.Controls.OBC.CDL.Logical.Not notLesTChiSetTarShe
+    "Check if the pre-heat target temperature setpoint is no less than the default temperature setpoint"
+    annotation (Placement(transformation(extent={{20,-120},{40,-100}})));
+  Buildings.Controls.OBC.CDL.Utilities.Assert assMesTChiSetTarShe(message="Error: the pre-heat target temperature setpoint must be greater than or equal to the default temperature setpoint during the heating mode.")
+    "Error message for the pre-heat target temperature setpoint during the heating mode"
+    annotation (Placement(transformation(extent={{60,-120},{80,-100}})));
+equation
+  connect(TChiSetDef, TChiSetSelByMod.uDef) annotation (Line(points={{-120,-40},
+          {-40,-40},{-40,0},{58,0}}, color={0,0,127}));
+  connect(uEna, setChaShe.uEna) annotation (Line(points={{-120,80},{-80,80},{-80,
+          76},{-2,76}}, color={255,0,255}));
+  connect(uEna, setChaReb.uEna) annotation (Line(points={{-120,80},{-80,80},{-80,
+          -44},{-2,-44}}, color={255,0,255}));
+  connect(TChiSetSelByMod.y, TChiSetCom)
+    annotation (Line(points={{82,0},{120,0}}, color={0,0,127}));
+  connect(setChaShe.y, TChiSetSelByMod.uShe) annotation (Line(points={{22,70},
+          {40,70},{40,-4},{58,-4}}, color={0,0,127}));
+  connect(setChaReb.y, TChiSetSelByMod.uReb) annotation (Line(points={{22,-50},
+          {40,-50},{40,-8},{58,-8}}, color={0,0,127}));
+  connect(demFleMod, TChiSetSelByMod.demFleMod) annotation (Line(points={{-120,
+          40},{20,40},{20,8},{58,8}}, color={255,127,0}));
+  connect(TChiSetCur, setChaShe.uCurSet) annotation (Line(points={{-120,0},{-60,
+          0},{-60,72},{-2,72}}, color={0,0,127}));
+  connect(TChiSetCur, setChaReb.uCurSet) annotation (Line(points={{-120,0},{-60,
+          0},{-60,-48},{-2,-48}}, color={0,0,127}));
+  connect(TChiSetDef, setChaReb.uAllMaxSet) annotation (Line(points={{-120,-40},
+          {-40,-40},{-40,-51.8},{-2,-51.8}}, color={0,0,127}));
+  connect(TChiSetDef, setChaShe.uAllMaxSet) annotation (Line(points={{-120,-40},
+          {-40,-40},{-40,68.2},{-2,68.2}}, color={0,0,127}));
+  connect(TChiSetTarShe, setChaReb.uAllMinSet) annotation (Line(points={{-120,
+          -80},{-20,-80},{-20,-56},{-2,-56}}, color={0,0,127}));
+  connect(TChiSetTarShe, setChaShe.uAllMinSet) annotation (Line(points={{-120,
+          -80},{-20,-80},{-20,64},{-2,64}}, color={0,0,127}));
+  connect(lesTChiSetTarShe.y, notLesTChiSetTarShe.u)
+    annotation (Line(points={{2,-110},{18,-110}}, color={255,0,255}));
+  connect(notLesTChiSetTarShe.y, assMesTChiSetTarShe.u)
+    annotation (Line(points={{42,-110},{58,-110}}, color={255,0,255}));
+  connect(TChiSetDef, lesTChiSetTarShe.u1) annotation (Line(points={{-120,-40},
+          {-40,-40},{-40,-110},{-22,-110}}, color={0,0,127}));
+  connect(TChiSetTarShe, lesTChiSetTarShe.u2) annotation (Line(points={{-120,
+          -80},{-60,-80},{-60,-118},{-22,-118}}, color={0,0,127}));
+  annotation (defaultComponentName="adj",
     Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}},
     grid={2,2}), graphics={Rectangle(
       extent={{-100,100},{100,-100}},
@@ -25,11 +113,12 @@ block Adjustment "Adjustment"
       textColor={0,0,255},
           textString="%name")}), Diagram(
     coordinateSystem(preserveAspectRatio=false,
-    grid={2,2})),
+    grid={2,2},
+        extent={{-100,-140},{100,120}})),
     Documentation(revisions="<html>
 <ul>
 <li>
-August 18, 2026, by Weiping Huang:<br/>
+October 27, 2026, by Weiping Huang:<br/>
 First implementation.
 </li>
 </ul>

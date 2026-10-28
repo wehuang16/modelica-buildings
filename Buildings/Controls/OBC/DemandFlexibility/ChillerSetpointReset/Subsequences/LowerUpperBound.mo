@@ -3,29 +3,44 @@ block LowerUpperBound "Lower upper bound"
 
   parameter Integer nChi(min=1)
     "Number of chillers";
-  parameter Real fanSpeDel_small(
+  parameter Real dT_small(
     min=0,
-    unit="1")=0.005
-    "A small fan speed delta, used to reduce the effects of rounding errors when comparing the current fan speed command to the target fan speed"
+    final unit="K",
+    displayUnit="K")=0.1
+    "A small temperature delta, used to reduce the effects of rounding errors when comparing the current temperature setpoint to the temperature setpoint limit"
     annotation (Dialog(group="Temperature setpoint parameters"));
+
   Buildings.Controls.OBC.CDL.Interfaces.IntegerInput demFleMod
     "Demand flexibility mode; 0 = pre-cool or pre-heat, 1 = default, 2 = load-shed, 3 = load-rebound"
     annotation (Placement(transformation(extent={{-240,60},{-200,100}}),
       iconTransformation(extent={{-140,58},{-100,98}})));
-  Buildings.Controls.OBC.CDL.Interfaces.RealInput fanSpeLimCur[nChi](unit="1")
-    "Current fan speed limit" annotation (Placement(transformation(extent={{-240,0},
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput TChiSetCur[nChi](
+    final unit="K",
+    displayUnit="degC",
+    final quantity="ThermodynamicTemperature")
+    "Current chilled water temperature setpoint"
+                              annotation (Placement(transformation(extent={{-240,0},
             {-200,40}}),    iconTransformation(extent={{-140,0},{-100,40}})));
-  Buildings.Controls.OBC.CDL.Interfaces.RealInput fanSpeLimDef[nChi](unit="1")
-    "Default fan speed limit" annotation (Placement(transformation(extent={{-240,
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput TChiSetDef[nChi](
+    final unit="K",
+    displayUnit="degC",
+    final quantity="ThermodynamicTemperature")
+    "Default chilled water temperature setpoint"
+                              annotation (Placement(transformation(extent={{-240,
             -40},{-200,0}}), iconTransformation(extent={{-140,-40},{-100,0}})));
-  Buildings.Controls.OBC.CDL.Interfaces.RealInput fanSpeLimTarShe[nChi](unit="1")
-    "Target fan speed limit for the load-shed mode" annotation (Placement(
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput TChiSetTarShe[nChi](
+    final unit="K",
+    displayUnit="degC",
+    final quantity="ThermodynamicTemperature")
+    "Target chilled water temperature setpoint for the load-shed mode"
+                                                    annotation (Placement(
         transformation(extent={{-240,-80},{-200,-40}}), iconTransformation(
           extent={{-140,-80},{-100,-40}})));
   Buildings.Controls.OBC.CDL.Interfaces.BooleanOutput reach_lowUppBou[nChi]
     "Reach the lower or upper bound" annotation (Placement(transformation(
           extent={{200,-20},{240,20}}), iconTransformation(extent={{100,-20},{
             140,20}})));
+
 protected
   Buildings.Controls.OBC.CDL.Integers.Sources.Constant conIntShe(
     final k=Buildings.Controls.OBC.DemandFlexibility.Types.DemandFlexibilityModes.loadShed)
@@ -49,30 +64,30 @@ protected
     final k=Buildings.Controls.OBC.DemandFlexibility.Types.DemandFlexibilityModes.loadRebound)
     "Integer constant for the load-rebound mode"
     annotation (Placement(transformation(extent={{-100,40},{-80,60}})));
-  Buildings.Controls.OBC.CDL.Reals.AddParameter addFanSpeDelShe[nChi](final p=
-        fill(fanSpeDel_small, nChi))
-    "Add a small fan speed delta during the load-shed mode"
-    annotation (Placement(transformation(extent={{-120,-80},{-100,-60}})));
-  Buildings.Controls.OBC.CDL.Reals.Less lesFanSpeLimTarShe[nChi](final h=fill(
-        0.5*fanSpeDel_small, nChi))
-    "The fan speed command is less than the load-shed target fan speed limit during the load-shed mode"
-    annotation (Placement(transformation(extent={{-40,-60},{-20,-40}})));
-  Buildings.Controls.OBC.CDL.Reals.AddParameter subFanSpeDelReb[nChi](final p=
-        fill(-fanSpeDel_small, nChi))
-    "Subtract a small fan speed delta during the load-rebound mode"
+  Buildings.Controls.OBC.CDL.Reals.AddParameter addDTReb[nChi](final p=fill(
+        dT_small, nChi))
+    "Add a small temperature delta during the load-rebound mode"
     annotation (Placement(transformation(extent={{-120,-40},{-100,-20}})));
-  Buildings.Controls.OBC.CDL.Reals.Greater greFanSpeLimDefReb[nChi](final h=
-        fill(0.5*fanSpeDel_small, nChi))
-    "The fan speed command is greater than the default fan speed limit during the load-rebound mode"
+  Buildings.Controls.OBC.CDL.Reals.Less lesTChiSetDefReb[nChi](final h=fill(0.5*
+        dT_small, nChi))
+    "The current chilled water temperature setpoint is less than the default chilled water temperature setpoint during the load-rebound mode"
     annotation (Placement(transformation(extent={{-40,-20},{-20,0}})));
-  Buildings.Controls.OBC.CDL.Logical.And reaFanSpeLimTarShe[nChi]
-    "In the load-shed mode, the fan speed command has reached the load-shed target fan speed limit"
+  Buildings.Controls.OBC.CDL.Reals.AddParameter subDTShe[nChi](final p=fill(-
+        dT_small, nChi))
+    "Subtract a small temperature delta during the load-shed mode"
+    annotation (Placement(transformation(extent={{-120,-80},{-100,-60}})));
+  Buildings.Controls.OBC.CDL.Reals.Greater greTChiSetTarShe[nChi](final h=fill(0.5
+        *dT_small, nChi))
+    "The current chilled water temperature setpoint is greater than the target chilled water temperature setpoint during the load-shed mode"
+    annotation (Placement(transformation(extent={{-40,-60},{-20,-40}})));
+  Buildings.Controls.OBC.CDL.Logical.And reaTChiSetTarShe[nChi]
+    "In the load-shed mode, the current chilled water temperature setpoint has reached the target chilled water temperature setpoint"
     annotation (Placement(transformation(extent={{80,-80},{100,-60}})));
-  Buildings.Controls.OBC.CDL.Logical.And reaFanSpeLimDef[nChi]
-    "In the load-rebound mode, the fan speed command has reached the default fan speed limit"
+  Buildings.Controls.OBC.CDL.Logical.And reaTChiSetDef[nChi]
+    "In the load-rebound mode, the current chilled water temperature setpoint has reached the default chilled water temperature setpoint"
     annotation (Placement(transformation(extent={{80,0},{100,20}})));
   Buildings.Controls.OBC.CDL.Logical.Or orReaLimSheReb[nChi]
-    "The fan speed command has reached a fan speed limit during the load-shed mode and the load-rebound mode"
+    "The current chilled water temperature setpoint has reached a temperature setpoint limit during the load-shed mode and the load-rebound mode"
     annotation (Placement(transformation(extent={{140,-40},{160,-20}})));
 equation
   connect(demFleMod, intEquShe.u1) annotation (Line(points={{-220,80},{-130,80},
@@ -91,32 +106,32 @@ equation
     annotation (Line(points={{-18,30},{-2,30}}, color={255,0,255}));
   connect(intEquReb.y, booScaRepReb.u)
     annotation (Line(points={{-18,70},{18,70}}, color={255,0,255}));
-  connect(fanSpeLimCur, greFanSpeLimDefReb.u1) annotation (Line(points={{-220,
-          20},{-160,20},{-160,-10},{-42,-10}}, color={0,0,127}));
-  connect(fanSpeLimDef, subFanSpeDelReb.u) annotation (Line(points={{-220,-20},{
-          -180,-20},{-180,-30},{-122,-30}}, color={0,0,127}));
-  connect(subFanSpeDelReb.y, greFanSpeLimDefReb.u2) annotation (Line(points={{-98,
-          -30},{-68,-30},{-68,-18},{-42,-18}}, color={0,0,127}));
-  connect(fanSpeLimCur, lesFanSpeLimTarShe.u1) annotation (Line(points={{-220,
-          20},{-160,20},{-160,-50},{-42,-50}}, color={0,0,127}));
-  connect(fanSpeLimTarShe, addFanSpeDelShe.u) annotation (Line(points={{-220,-60},
-          {-180,-60},{-180,-70},{-122,-70}}, color={0,0,127}));
-  connect(addFanSpeDelShe.y, lesFanSpeLimTarShe.u2) annotation (Line(points={{-98,
-          -70},{-68,-70},{-68,-58},{-42,-58}}, color={0,0,127}));
-  connect(booScaRepReb.y, reaFanSpeLimDef.u1) annotation (Line(points={{42,70},
-          {60,70},{60,10},{78,10}}, color={255,0,255}));
-  connect(greFanSpeLimDefReb.y, reaFanSpeLimDef.u2) annotation (Line(points={{-18,
-          -10},{60,-10},{60,2},{78,2}}, color={255,0,255}));
-  connect(booScaRepShe.y, reaFanSpeLimTarShe.u1) annotation (Line(points={{22,
-          30},{40,30},{40,-70},{78,-70}}, color={255,0,255}));
-  connect(lesFanSpeLimTarShe.y, reaFanSpeLimTarShe.u2) annotation (Line(points=
-          {{-18,-50},{20,-50},{20,-78},{78,-78}}, color={255,0,255}));
-  connect(reaFanSpeLimDef.y, orReaLimSheReb.u1) annotation (Line(points={{102,
-          10},{120,10},{120,-30},{138,-30}}, color={255,0,255}));
-  connect(reaFanSpeLimTarShe.y, orReaLimSheReb.u2) annotation (Line(points={{
-          102,-70},{120,-70},{120,-38},{138,-38}}, color={255,0,255}));
+  connect(TChiSetCur, greTChiSetTarShe.u1) annotation (Line(points={{-220,20},{-160,
+          20},{-160,-50},{-42,-50}}, color={0,0,127}));
+  connect(subDTShe.y, greTChiSetTarShe.u2) annotation (Line(points={{-98,-70},{-68,
+          -70},{-68,-58},{-42,-58}}, color={0,0,127}));
+  connect(TChiSetCur, lesTChiSetDefReb.u1) annotation (Line(points={{-220,20},{-160,
+          20},{-160,-10},{-42,-10}}, color={0,0,127}));
+  connect(addDTReb.y, lesTChiSetDefReb.u2) annotation (Line(points={{-98,-30},{-68,
+          -30},{-68,-18},{-42,-18}}, color={0,0,127}));
+  connect(booScaRepReb.y, reaTChiSetDef.u1) annotation (Line(points={{42,70},{60,
+          70},{60,10},{78,10}}, color={255,0,255}));
+  connect(booScaRepShe.y, reaTChiSetTarShe.u1) annotation (Line(points={{22,30},
+          {40,30},{40,-70},{78,-70}}, color={255,0,255}));
+  connect(reaTChiSetDef.y, orReaLimSheReb.u1) annotation (Line(points={{102,10},
+          {120,10},{120,-30},{138,-30}}, color={255,0,255}));
+  connect(reaTChiSetTarShe.y, orReaLimSheReb.u2) annotation (Line(points={{102,-70},
+          {120,-70},{120,-38},{138,-38}}, color={255,0,255}));
   connect(orReaLimSheReb.y, reach_lowUppBou) annotation (Line(points={{162,-30},
           {180,-30},{180,0},{220,0}}, color={255,0,255}));
+  connect(TChiSetDef, addDTReb.u) annotation (Line(points={{-220,-20},{-140,-20},
+          {-140,-30},{-122,-30}}, color={0,0,127}));
+  connect(TChiSetTarShe, subDTShe.u) annotation (Line(points={{-220,-60},{-180,-60},
+          {-180,-70},{-122,-70}}, color={0,0,127}));
+  connect(lesTChiSetDefReb.y, reaTChiSetDef.u2) annotation (Line(points={{-18,-10},
+          {20,-10},{20,2},{78,2}}, color={255,0,255}));
+  connect(greTChiSetTarShe.y, reaTChiSetTarShe.u2) annotation (Line(points={{-18,
+          -50},{20,-50},{20,-78},{78,-78}}, color={255,0,255}));
   annotation (defaultComponentName="lowUppBou",
     Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}},
     grid={2,2}), graphics={Rectangle(
