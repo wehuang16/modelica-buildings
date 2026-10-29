@@ -46,7 +46,7 @@ block Controller "Controller"
     "Target fan speed limit for the load-shed mode" annotation (Placement(
         transformation(extent={{-140,-160},{-100,-120}}), iconTransformation(
           extent={{-140,-160},{-100,-120}})));
-  annotation (defaultComponentName="booPasThr",
+  annotation (defaultComponentName="con",
     Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-200},{100,200}},
     grid={2,2}), graphics={Rectangle(
       extent={{-100,200},{100,-200}},

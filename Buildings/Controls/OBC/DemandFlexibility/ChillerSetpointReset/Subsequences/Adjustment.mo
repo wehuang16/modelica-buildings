@@ -32,8 +32,8 @@ block Adjustment "Adjustment"
             -140,-20},{-100,20}}), iconTransformation(extent={{-140,-20},{-100,20}})));
   Buildings.Controls.OBC.CDL.Interfaces.RealOutput TChiSetCom(
     final unit="K",
-    displayUnit="degC")
-    "Commanded chilled water temperature setpoint" annotation (Placement(transformation(extent={{100,-20},
+    displayUnit="degC") "Commanded chilled water temperature setpoint"
+                                                   annotation (Placement(transformation(extent={{100,-20},
             {140,20}}),         iconTransformation(extent={{100,-20},{140,20}})));
   Buildings.Controls.OBC.CDL.Interfaces.RealInput TChiSetDef(
     final unit="K",

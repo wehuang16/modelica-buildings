@@ -5,12 +5,14 @@ block ElectricityDemand "Electricity demand check"
     final unit="W",
     final quantity="Power",
     final min=0)
-    "Minimum difference between the electricity demand reduction target and the actual reduction";
+    "Minimum difference between the electricity demand reduction target and the actual reduction"
+    annotation (Dialog(group="Electricity demand parameters"));
   parameter Real PBuiRed_nominal(
     final unit="W",
     final quantity="Power",
     final min=0)
-    "Nominal electricity demand reduction of the building";
+    "Nominal electricity demand reduction of the building"
+    annotation (Dialog(group="Electricity demand parameters"));
   parameter Real PBuiRedHys(
     final unit="W",
     final quantity="Power",
