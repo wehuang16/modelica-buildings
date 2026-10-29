@@ -1,17 +1,30 @@
 within Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences;
 block ElectricityDemand "Electricity demand check"
 
-  parameter Real PBuiRedDifMin(final unit="W", final quantity="Power", final min=0)
+  parameter Real PBuiRedDifMin(
+    final unit="W",
+    final quantity="Power",
+    final min=0)
     "Minimum difference between the electricity demand reduction target and the actual reduction";
-  parameter Real PBuiRed_nominal(final unit="W", final quantity="Power", final min=0)
+  parameter Real PBuiRed_nominal(
+    final unit="W",
+    final quantity="Power",
+    final min=0)
     "Nominal electricity demand reduction of the building";
-  parameter Real PBuiRedHys(final unit="W", final quantity="Power", final min=0)=0.05*PBuiRed_nominal
+  parameter Real PBuiRedHys(
+    final unit="W",
+    final quantity="Power",
+    final min=0)=0.05*PBuiRed_nominal
     "Hysteresis for the electricity demand reduction of the building";
 
-  Buildings.Controls.OBC.CDL.Interfaces.RealInput PBuiRedTar(final unit="W", final quantity="Power")
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput PBuiRedTar(
+    final unit="W",
+    final quantity="Power")
     "Target electricity demand reduction of the building"
     annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
-  Buildings.Controls.OBC.CDL.Interfaces.RealInput PBuiRed(final unit="W", final quantity="Power")
+  Buildings.Controls.OBC.CDL.Interfaces.RealInput PBuiRed(
+    final unit="W",
+    final quantity="Power")
     "Electricity demand reduction of the building (baseline demand minus actual demand)"
     annotation (Placement(transformation(extent={{-140,-80},{-100,-40}})));
   Buildings.Controls.OBC.CDL.Interfaces.BooleanOutput need_PBuiShe
@@ -22,7 +35,9 @@ protected
   Buildings.Controls.OBC.CDL.Reals.Subtract PBuiRedDif
     "Difference between the target and the actual electricity demand reduction"
     annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
-  Buildings.Controls.OBC.CDL.Reals.GreaterThreshold greDifMin(final t=PBuiRedDifMin, final h=PBuiRedHys)
+  Buildings.Controls.OBC.CDL.Reals.GreaterThreshold greDifMin(
+    final t=PBuiRedDifMin,
+    final h=PBuiRedHys)
     "Check if the difference is greater than the minimum allowable difference"
     annotation (Placement(transformation(extent={{0,-10},{20,10}})));
 
@@ -42,13 +57,28 @@ equation
         fillColor={255,255,255}, fillPattern=FillPattern.Solid),
         Text(extent={{-100,140},{100,100}}, textColor={0,0,255}, textString="%name")}),
     Diagram(coordinateSystem(preserveAspectRatio=false, grid={2,2})),
-    Documentation(revisions="<html><ul>
-<li>October 27, 2026, by Liam Cochrane:<br/>Made internal blocks protected, completed parameter declarations, and added documentation.</li>
-<li>August 18, 2026, by Weiping Huang:<br/>First implementation.</li>
-</ul></html>", info="<html>
-<p>Electricity demand check for the chilled water temperature setpoint reset strategy.
+    Documentation(revisions="<html>
+<ul>
+<li>
+October 27, 2026, by Liam Cochrane:<br/>Made internal blocks protected, completed
+parameter declarations, and added documentation.
+</li>
+<li>
+August 18, 2026, by Weiping Huang:<br/>First implementation.
+</li>
+</ul>
+</html>", info="<html>
+<p>
+This block represents an electricity demand check.
+</p>
+<p>
+The input variable <code>PBuiRedTar</code> represents a target electricity demand
+reduction of a building. 
+</p>
+<p>
 The output <code>need_PBuiShe</code> is true when <code>PBuiRedTar - PBuiRed</code>
 is greater than <code>PBuiRedDifMin</code>, meaning the shed target is not yet met
-and the setpoint may be ratcheted further. A hysteresis of <code>PBuiRedHys</code> is applied.</p>
+and the setpoint may be ratcheted further. A hysteresis of <code>PBuiRedHys</code> is applied.
+</p>
 </html>"));
 end ElectricityDemand;

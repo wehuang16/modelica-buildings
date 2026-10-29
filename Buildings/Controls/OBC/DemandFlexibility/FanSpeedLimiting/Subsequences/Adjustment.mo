@@ -58,14 +58,14 @@ protected
     final use_pre=false)
     "Output the corresponding commanded zone temperature setpoint value based on the demand flexibility mode"
     annotation (Placement(transformation(extent={{60,-10},{80,10}})));
-  Buildings.Controls.OBC.CDL.Reals.Less lesFanSpeLimTarShe
-    "Check if the pre-heat target temperature setpoint is less than the default temperature setpoint"
+  CDL.Reals.Greater greFanSpeLimDef
+    "Check if the target fan speed limit for the load-shed mode is greater than the default fan speed limit"
     annotation (Placement(transformation(extent={{-20,-120},{0,-100}})));
-  Buildings.Controls.OBC.CDL.Logical.Not notLesFanSpeLimTarShe
-    "Check if the pre-heat target temperature setpoint is no less than the default temperature setpoint"
+  Buildings.Controls.OBC.CDL.Logical.Not notGreFanSpeLimDef
+    "Check if the target fan speed limit for the load-shed mode is no greater than the default fan speed limit"
     annotation (Placement(transformation(extent={{20,-120},{40,-100}})));
-  Buildings.Controls.OBC.CDL.Utilities.Assert assMesFanSpeLimTarShe(message="Error: the pre-heat target temperature setpoint must be greater than or equal to the default temperature setpoint during the heating mode.")
-    "Error message for the pre-heat target temperature setpoint during the heating mode"
+  Buildings.Controls.OBC.CDL.Utilities.Assert assMesFanSpeLimDef(message="Error: the target fan speed limit for the load-shed mode must be less than or equal to the default fan speed limit.")
+    "Error message for the default fan speed limit"
     annotation (Placement(transformation(extent={{60,-120},{80,-100}})));
 equation
   connect(fanSpeLimDef, fanSpeLimSelByMod.uDef) annotation (Line(points={{-120,-40},
@@ -91,17 +91,17 @@ equation
   connect(fanSpeLimDef, setChaShe.uAllMaxSet) annotation (Line(points={{-120,-40},
           {-40,-40},{-40,68.2},{-2,68.2}}, color={0,0,127}));
   connect(fanSpeLimTarShe, setChaReb.uAllMinSet) annotation (Line(points={{-120,
-          -80},{-20,-80},{-20,-56},{-2,-56}}, color={0,0,127}));
+          -80},{-30,-80},{-30,-56},{-2,-56}}, color={0,0,127}));
   connect(fanSpeLimTarShe, setChaShe.uAllMinSet) annotation (Line(points={{-120,
-          -80},{-20,-80},{-20,64},{-2,64}}, color={0,0,127}));
-  connect(lesFanSpeLimTarShe.y, notLesFanSpeLimTarShe.u)
+          -80},{-30,-80},{-30,64},{-2,64}}, color={0,0,127}));
+  connect(greFanSpeLimDef.y, notGreFanSpeLimDef.u)
     annotation (Line(points={{2,-110},{18,-110}}, color={255,0,255}));
-  connect(notLesFanSpeLimTarShe.y, assMesFanSpeLimTarShe.u)
+  connect(notGreFanSpeLimDef.y, assMesFanSpeLimDef.u)
     annotation (Line(points={{42,-110},{58,-110}}, color={255,0,255}));
-  connect(fanSpeLimDef, lesFanSpeLimTarShe.u1) annotation (Line(points={{-120,-40},
-          {-40,-40},{-40,-110},{-22,-110}}, color={0,0,127}));
-  connect(fanSpeLimTarShe, lesFanSpeLimTarShe.u2) annotation (Line(points={{-120,
-          -80},{-60,-80},{-60,-118},{-22,-118}}, color={0,0,127}));
+  connect(fanSpeLimTarShe, greFanSpeLimDef.u1) annotation (Line(points={{-120,-80},
+          {-30,-80},{-30,-110},{-22,-110}}, color={0,0,127}));
+  connect(fanSpeLimDef, greFanSpeLimDef.u2) annotation (Line(points={{-120,-40},
+          {-40,-40},{-40,-118},{-22,-118}}, color={0,0,127}));
   annotation (defaultComponentName="adj",
     Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}},
     grid={2,2}), graphics={Rectangle(
@@ -124,7 +124,92 @@ First implementation.
 </ul>
 </html>", info="<html>
 <p>
-Passes a Boolean signal through without modification.
+This block changes the fan speed limit based on the
+change enabling signal input and the demand flexibility mode.
 </p>
+<p>
+The input <code>fanSpeLimCur</code> represents the current value of the
+fan speed limit and the output <code>fanSpeLimCom</code> is the
+commanded fan speed limit.
+</p>
+<p>
+The demand flexibility mode input <code>demFleMod</code> can be: <i>1</i> (default mode),
+<i>2</i> (load-shed mode), or <i>3</i> (load-rebound mode).
+</p>
+<p>
+This block conducts a fan speed limit change to output the commanded fan speed limit
+<code>fanSpeLimCom</code> as follows if the multiple-step setpoint change flag
+<code>use_mulSteSetCha = true</code>:
+</p>
+<table summary=\"summary\" border=\"1\">
+<tr>
+<th>demFleMod</th>
+<th>fanSpeLimCom if uEna=true</th>
+<th>fanSpeLimCom if uEna=false</th>
+</tr>
+<tr>
+<tr>
+<td>1</td>
+<td>fanSpeLimDef</td>
+<td>fanSpeLimDef</td>
+</tr>
+<tr>
+<td>2</td>
+<td>min(fanSpeLimDef, max(fanSpeLimTarShe, fanSpeLimCur - delFanSpeLimShe))</td>
+<td>min(fanSpeLimDef, max(fanSpeLimTarShe, fanSpeLimCur))</td>
+</tr>
+<tr>
+<td>3</td>
+<td>min(fanSpeLimDef, max(fanSpeLimTarShe, fanSpeLimCur + delFanSpeLimReb))</td>
+<td>min(fanSpeLimDef, max(fanSpeLimTarShe, fanSpeLimCur))</td>
+</tr>
+</table>
+<p>
+This block conducts a fan speed limit change to output the commanded fan speed limit
+<code>fanSpeLimCom</code> as follows if the multiple-step setpoint change flag
+<code>use_mulSteSetCha = false</code>:
+</p>
+<table summary=\"summary\" border=\"1\">
+<tr>
+<th>demFleMod</th>
+<th>fanSpeLimCom if uEna=true</th>
+<th>fanSpeLimCom if uEna=false</th>
+</tr>
+<tr>
+<td>1</td>
+<td>fanSpeLimDef</td>
+<td>fanSpeLimDef</td>
+</tr>
+<tr>
+<td>2</td>
+<td>fanSpeLimTarShe</td>
+<td>min(fanSpeLimDef, max(fanSpeLimTarShe, fanSpeLimCur))</td>
+</tr>
+<tr>
+<td>3</td>
+<td>fanSpeLimDef</td>
+<td>min(fanSpeLimDef, max(fanSpeLimTarShe, fanSpeLimCur))</td>
+</tr>
+</table>
+<p>
+Note:
+</p>
+<ul>
+<li>
+<code>fanSpeLimDef &gt;= fanSpeLimTarShe</code> must hold.
+</li>
+<li>
+The output <code>fanSpeLimCom</code> is intended to be received by a
+downstream fan controller, which will process the fan speed limit change
+and pass its new fan speed limit back to the input <code>fanSpeLimCur</code>, completing a
+full control loop.
+</li>
+<li>
+Within each demand flexibility mode, the changes of both
+<code>fanSpeLimCur</code> and <code>fanSpeLimCom</code> will occur in only one direction:
+either increasing or decreasing. The direction can only change when the
+demand flexibility mode changes.
+</li>
+</ul>
 </html>"));
 end Adjustment;
