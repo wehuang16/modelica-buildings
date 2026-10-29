@@ -14,6 +14,14 @@ block Controller "Controller"
     unit="W")=0.05*PBuiRed_nominal
     "Hysteresis for the electricity demand reduction of the building";
 
+  Subsequences.Qualification qua
+    annotation (Placement(transformation(extent={{-60,60},{-40,80}})));
+  Subsequences.ElectricityDemand eleDem
+    annotation (Placement(transformation(extent={{-60,20},{-40,40}})));
+  Subsequences.LowerUpperBound lowUppBou
+    annotation (Placement(transformation(extent={{-60,-20},{-40,0}})));
+  Subsequences.Adjustment adj
+    annotation (Placement(transformation(extent={{40,20},{60,40}})));
   annotation (defaultComponentName="booPasThr",
     Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}},
     grid={2,2}), graphics={Rectangle(
@@ -29,7 +37,7 @@ block Controller "Controller"
     Documentation(revisions="<html>
 <ul>
 <li>
-August 18, 2026, by Weiping Huang:<br/>
+October 18, 2026, by Weiping Huang:<br/>
 First implementation.
 </li>
 </ul>

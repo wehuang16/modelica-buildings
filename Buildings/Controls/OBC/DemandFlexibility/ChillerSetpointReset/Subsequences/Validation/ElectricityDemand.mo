@@ -1,21 +1,19 @@
 within Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.Validation;
 model ElectricityDemand "Validation model for the electricity demand check"
 
-  Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectricityDemand eleDem(
-    final PBuiRedDifMin=10000,
-    final PBuiRed_nominal=100000)
+  Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectricityDemand eleDem(final
+      PBuiRedDifMin=100, final PBuiRed_nominal=5000)
     "Electricity demand check"
     annotation (Placement(transformation(extent={{40,-20},{80,20}})));
 
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant PBuiRedTar(
-    final k=100000)
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant PBuiRedTar(final k=1000)
     "Target electricity demand reduction"
     annotation (Placement(transformation(extent={{-60,30},{-40,50}})));
 
   Buildings.Controls.OBC.CDL.Reals.Sources.Sin PBuiRed(
-    final amplitude=50000,
+    final amplitude=500,
     final freqHz=1/3600,
-    final offset=90000)
+    final offset=900)
     "Actual electricity demand reduction"
     annotation (Placement(transformation(extent={{-60,-50},{-40,-30}})));
 

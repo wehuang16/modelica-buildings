@@ -154,7 +154,30 @@ First implementation.
 </ul>
 </html>", info="<html>
 <p>
-Passes a Boolean signal through without modification.
+This block checks whether the current chilled water temperature setpoint
+<code>TChiSetCur</code> has reached a lower bound or an upper bound.
 </p>
+<p>
+Input variable <code>TChiSetDef</code> is the default chilled water temperature
+setpoint. Input variable <code>TChiSetTarShe</code> is the target chilled water
+temperature setpoint for the load-shed mode. Input variable <code>demFleMod</code>
+is the demand flexibility mode. Parameter <code>dT_small</code> is a small
+temperature delta that is used to reduce the effects of rounding errors.
+</p>
+<p>
+If <code>TChiSetCur</code> satisfies any of the following, the boolean output
+variable <code>reach_lowUppBou</code> will become <code>true</code>. Otherwise,
+<code>reach_lowUppBou</code> will be <code>false</code>:
+</p>
+<ul>
+<li>
+<code>demFleMod = 2</code> and
+<code>TChiSetCur &gt; TChiSetTarShe - dT_small</code>
+</li>
+<li>
+or: <code>demFleMod = 3</code> and
+<code>TChiSetCur &lt; TChiSetDef + dT_small</code>
+</li>
+</ul>
 </html>"));
 end LowerUpperBound;

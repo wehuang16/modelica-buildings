@@ -139,7 +139,30 @@ First implementation.
 </ul>
 </html>", info="<html>
 <p>
-Passes a Boolean signal through without modification.
+This block checks whether the current fan speed limit <code>fanSpeLimCur</code> has
+reached a lower bound or an upper bound.
 </p>
+<p>
+Input variable <code>fanSpeLimDef</code> is the default fan speed limit. Input
+variable <code>fanSpeLimTarShe</code> is the target fan speed limit for the
+load-shed mode. Input variable <code>demFleMod</code> is the demand flexibility mode.
+Parameter <code>fanSpeDel_small</code> is a small fan speed delta that is used to
+reduce the effects of rounding errors.
+</p>
+<p>
+If <code>fanSpeLimCur</code> satisfies any of the following, the boolean output
+variable <code>reach_lowUppBou</code> will become <code>true</code>. Otherwise,
+<code>reach_lowUppBou</code> will be <code>false</code>:
+</p>
+<ul>
+<li>
+<code>demFleMod = 2</code> and
+<code>fanSpeLimCur &lt; fanSpeLimTarShe + fanSpeDel_small</code>
+</li>
+<li>
+or: <code>demFleMod = 3</code> and
+<code>fanSpeLimCur &gt; fanSpeLimDef - fanSpeDel_small</code>
+</li>
+</ul>
 </html>"));
 end LowerUpperBound;

@@ -15,7 +15,8 @@ block ElectricityDemand "Electricity demand check"
     final unit="W",
     final quantity="Power",
     final min=0)=0.05*PBuiRed_nominal
-    "Hysteresis for the electricity demand reduction of the building";
+    "Hysteresis for the electricity demand reduction of the building"
+    annotation (Dialog(tab="Advanced", group="Hysteresis"));
 
   Buildings.Controls.OBC.CDL.Interfaces.RealInput PBuiRedTar(
     final unit="W",
@@ -64,7 +65,7 @@ October 27, 2026, by Liam Cochrane:<br/>Made internal blocks protected, complete
 parameter declarations, and added documentation.
 </li>
 <li>
-August 18, 2026, by Weiping Huang:<br/>First implementation.
+October 18, 2026, by Weiping Huang:<br/>First implementation.
 </li>
 </ul>
 </html>", info="<html>
@@ -72,13 +73,15 @@ August 18, 2026, by Weiping Huang:<br/>First implementation.
 This block represents an electricity demand check.
 </p>
 <p>
-The input variable <code>PBuiRedTar</code> represents a target electricity demand
-reduction of a building. 
+The input variable <code>PBuiRedTar</code> represents a target amount of electricity
+demand reduction of a building, whereas the input variable <code>PBuiRed</code> represents
+the actual electricity demand reduction of a building, which is equal to the baseline
+electricity demand minus the actual elecricity demand.
 </p>
 <p>
-The output <code>need_PBuiShe</code> is true when <code>PBuiRedTar - PBuiRed</code>
-is greater than <code>PBuiRedDifMin</code>, meaning the shed target is not yet met
-and the setpoint may be ratcheted further. A hysteresis of <code>PBuiRedHys</code> is applied.
+The boolean output variable <code>need_PBuiShe</code> specifies whether a building needs
+further electricity demand shed. It is <code>true</code> when <code>PBuiRedTar - PBuiRed</code>
+is greater than a minimum electricity demand reduction difference parameter <code>PBuiRedDifMin</code>.
 </p>
 </html>"));
 end ElectricityDemand;
