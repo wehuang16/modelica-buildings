@@ -1,7 +1,7 @@
 within Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Validation;
 model MultipleChillerVariant1And2 "Multiple chillers in Variant 1 and 2"
 
-  Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Controller booPasThr
+  Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Controller con
     annotation (Placement(transformation(extent={{-40,14},{-20,46}})));
   annotation (experiment(StopTime=172800, Interval=60, Tolerance=1e-06),
   __Dymola_Commands(file="modelica://Buildings/Resources/Scripts/Dymola/Controls/OBC/DemandFlexibility/ChillerSetpointReset/Validation/MultipleChillerVariant1And2.mos"

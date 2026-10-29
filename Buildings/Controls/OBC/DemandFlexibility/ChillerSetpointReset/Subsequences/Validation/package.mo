@@ -1,5 +1,5 @@
 within Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences;
-package Validation
+package Validation "Validation"
 
   annotation (Documentation(info="<html>
 <p>

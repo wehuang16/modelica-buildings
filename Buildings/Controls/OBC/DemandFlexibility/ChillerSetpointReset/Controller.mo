@@ -239,7 +239,87 @@ First implementation.
 </ul>
 </html>", info="<html>
 <p>
-Passes a Boolean signal through without modification.
+This block performs chiller chilled water temperature setpoint change for all
+chillers in a building. This block first checks whether a chiller is enabled for the
+chilled water temperature setpoint change, then executes the setpoint change
+operation by outputting new setpoints.
+</p>
+<h4>Parameter Definitions</h4>
+<p>
+The control variant parameter <code>zonConVar</code> in this block can have <i>4</i>
+different values based on enumeration, from Variant <i>1</i> through Variant
+<i>4</i>. Refer to the documentation of
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant\">
+Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant</a>
+for more information on these <i>4</i> variants.
+</p>
+<p>
+The demand flexibility mode input <code>demFleMod</code> can be: <i>1</i> (default
+mode), <i>2</i> (load-shed mode), or <i>3</i> (load-rebound mode).
+</p>
+<p>
+The input variable <code>TChiSetCur</code> is the current chilled water temperature
+setpoint, and the output variable <code>TChiSetCom</code> is the commanded chilled
+water temperature setpoint.
+</p>
+<h4>Chiller Enablement</h4>
+<p>
+This block checks whether each chiller is enabled for chilled water temperature
+setpoint change. There are <i>3</i> conditions to check, as follows:
+</p>
+<ol>
+<li>
+The input variable <code>uQua = true</code> for a chiller, which means that this
+chiller is qualified for chilled water temperature setpoint change based on certain
+qualification rules. An example of these qualification rules is represented by the
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.Qualification\">
+Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.Qualification</a>
+block, where users have the option to feed the output of this block externally to
+the input variable <code>uQua</code>.
+</li>
+<li>
+The building, where the chiller is located, has not reached an electricity demand
+reduction goal. Specific logic of this electricity demand check is represented by
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectricityDemand\">
+Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectricityDemand</a>.
+<li>
+<code>TChiSetCur</code> has not reached a lower bound or an upper bound. Specific
+logic of this lower or upper bound check is represented by
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.LowerUpperBound\">
+Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.LowerUpperBound</a>.
+Note that different chillers can have different lower bounds or upper bounds.
+</li>
+</ol>
+<p>
+All <i>3</i> conditions need to be met for a chiller to be enabled for chilled water
+setpoint change. If <code>zonConVar</code> has a value of Variant <i>1</i> or Variant
+<i>2</i>, Condition <i>2</i> is not used, thus the remaining <i>2</i> conditions
+need to be met for the chilled water temperature setpoint change enablement.
+</p>
+<h4>Chiller Setpoint Adjustment</h4>
+<p>
+For all chillers that are enabled for chilled water temperature setpoint change,
+this block takes the input variable <code>TChiSetCur</code>, executes the chilled
+water setpoint change, and outputs the new setpoint <code>TChiSetCom</code>. The
+setpoint change operation is executed every <code>setChaWaiTim</code> seconds. Refer
+to the
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.Adjustment\">
+Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.Adjustment</a>
+block for more detailed description.
+</p>
+<p>
+Note that the setpoint change execution for each chiller is independent, meaning
+that if different chillers are enabled for setpoint change at different times, the
+chilled water temperature setpoints will be different for different chillers.
+</p>
+<p>
+Also note that if <code>zonConVar</code> has a value of Variant <i>1</i>, the
+multiple-step setpoint change flag parameter <code>use_mulSteSetCha</code> within
+the
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.Adjustment\">
+Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.Adjustment</a>
+block will be <code>false</code>. Otherwise, <code>use_mulSteSetCha</code> will be
+<code>true</code>.
 </p>
 </html>"));
 end Controller;
