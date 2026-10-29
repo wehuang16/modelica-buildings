@@ -1,5 +1,5 @@
 within Buildings.Controls.OBC.DemandFlexibility.FanSpeedLimiting.Subsequences;
-package Validation
+package Validation "Validation"
 
   annotation (Documentation(info="<html>
 <p>
