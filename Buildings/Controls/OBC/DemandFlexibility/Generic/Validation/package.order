@@ -1,5 +1,6 @@
 BooleanPassThrough
 DoubleSwitch
+ElectricityDemand
 RealValueSelectionByMode
 SelectLargestValues
 SelectSmallestValues

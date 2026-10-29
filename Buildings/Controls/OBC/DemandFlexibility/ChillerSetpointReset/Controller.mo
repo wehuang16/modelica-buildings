@@ -119,12 +119,11 @@ block Controller "Controller"
       iconTransformation(extent={{-140,-22},{-100,18}})));
 
 protected
-  Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectricityDemand eleDem(
+  Buildings.Controls.OBC.DemandFlexibility.Generic.ElectricityDemand eleDem(
     final PBuiRedDifMin=PBuiRedDifMin,
     final PBuiRed_nominal=PBuiRed_nominal,
-    final PBuiRedHys=PBuiRedHys)
-    if zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_3
-      or zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_4
+    final PBuiRedHys=PBuiRedHys) if zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_3
+     or zonConVar == Buildings.Controls.OBC.DemandFlexibility.Types.ZoneControlVariant.Variant_4
     "Electricity demand check"
     annotation (Placement(transformation(extent={{-100,60},{-80,80}})));
   Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.LowerUpperBound lowUppBou(
@@ -280,8 +279,8 @@ the input variable <code>uQua</code>.
 <li>
 The building, where the chiller is located, has not reached an electricity demand
 reduction goal. Specific logic of this electricity demand check is represented by
-<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectricityDemand\">
-Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences.ElectricityDemand</a>.
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.Generic.ElectricityDemand\">
+Buildings.Controls.OBC.DemandFlexibility.Generic.ElectricityDemand</a>.
 <li>
 <code>TChiSetCur</code> has not reached a lower bound or an upper bound. Specific
 logic of this lower or upper bound check is represented by
