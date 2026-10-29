@@ -1,4 +1,4 @@
-within Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Subsequences;
+within Buildings.Controls.OBC.DemandFlexibility.Generic;
 block ElectricityDemand "Electricity demand check"
 
   parameter Real PBuiRedDifMin(
