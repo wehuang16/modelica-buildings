@@ -3,6 +3,11 @@ model MultipleChillerVariant1And2 "Multiple chillers in Variant 1 and 2"
 
   Buildings.Controls.OBC.DemandFlexibility.ChillerSetpointReset.Controller con
     annotation (Placement(transformation(extent={{-40,14},{-20,46}})));
+  Subsequences.Qualification qua[nChi]
+    annotation (Placement(transformation(extent={{-100,40},{-80,60}})));
+equation
+  connect(qua.yQua, con.uQua) annotation (Line(points={{-78,50},{-56,50},{-56,
+          43.7143},{-42,43.7143}}, color={255,0,255}));
   annotation (experiment(StopTime=172800, Interval=60, Tolerance=1e-06),
   __Dymola_Commands(file="modelica://Buildings/Resources/Scripts/Dymola/Controls/OBC/DemandFlexibility/ChillerSetpointReset/Validation/MultipleChillerVariant1And2.mos"
     "Simulate and plot"),
