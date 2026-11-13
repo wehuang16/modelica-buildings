@@ -36,7 +36,7 @@ Buildings.Controls.OBC.DemandFlexibility.Generic.ElectricityDemand</a>.
 </html>", revisions="<html>
 <ul>
 <li>
-October 21, 2026, by Weiping Huang, Liam Cochrane:<br/>
+October 21, 2026, by Weiping Huang and Liam Cochrane:<br/>
 First implementation.
 </li>
 </ul>
