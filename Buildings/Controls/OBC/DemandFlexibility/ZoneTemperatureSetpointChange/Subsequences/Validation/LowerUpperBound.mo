@@ -1,0 +1,67 @@
+within Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.Validation;
+model LowerUpperBound "Zone enablement"
+
+  Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.LowerUpperBound
+    zonEna(
+    dTSheThr=0.5,
+    airConMod=Buildings.Controls.OBC.DemandFlexibility.Types.AirConditioningMode.Heating,
+    nZon=5,
+    TPreTarSet=fill(567.8, 5),
+    TSheTarSet=fill(562.3, 5),
+    TDefSet=fill(566.3, 5))
+            "Zone enablement block"
+    annotation (Placement(transformation(extent={{60,-18},{80,18}})));
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant TZonSetVal[5](
+    k=fill(273.15 + 20, 5))
+    "Zone temperature setpoint values for Zone 1 through 5"
+    annotation (Placement(transformation(extent={{-80,-20},{-60,0}})));
+  Buildings.Controls.OBC.CDL.Integers.Sources.TimeTable tabDemFleMod(
+    table=[0,1; 14,0; 16,2; 21,3; 23,1; 24,1],
+    timeScale=3600,
+    period=86400)
+    "A table of demand flexibility modes that repeat every day"
+    annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));
+equation
+  connect(TZonSetVal.y,zonEna. TZonSet)
+    annotation (Line(points={{-58,-10},{-40,-10},{-40,0},{58,0}}, color={0,0,127}));
+  connect(tabDemFleMod.y[1],zonEna. demFleMod)
+    annotation (Line(points={{-58,-50},{-20,-50},{-20,-4},{58,-4}},
+      color={255,127,0}));
+annotation (experiment(StopTime=172800, Interval=1, Tolerance=1e-06),
+  __Dymola_Commands(file="modelica://Buildings/Resources/Scripts/Dymola/Controls/OBC/DemandFlexibility/ZoneTemperatureSetpointChange/Subsequences/Validation/LowerUpperBound.mos"
+    "Simulate and plot"),
+  Documentation(info="<html>
+<p>
+This example validates
+<a href=\"modelica://Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.LowerUpperBound\">
+Buildings.Controls.OBC.DemandFlexibility.ZoneTemperatureSetpointChange.Subsequences.LowerUpperBound</a>
+for a 5-zone building under the heating operation.
+</p>
+<p>
+This validation example shows how the <code>Enable</code> block decides whether
+a zone should be enabled for zone temperature comparison based on two out of the
+four zone enabling conditions: whether a zone is a rogue zone or not, and whether
+the building electricity demand rises above the electricity demand threshold.
+</p>
+</html>", revisions="<html>
+<ul>
+<li>
+July 27, 2026, by Weiping Huang:<br/>
+First implementation.
+</li>
+</ul>
+</html>"),
+    Icon(coordinateSystem(preserveAspectRatio=false,extent={{-100,-100},{100,100}}),
+        graphics={
+        Ellipse(lineColor = {75,138,73},
+                fillColor={255,255,255},
+                fillPattern = FillPattern.Solid,
+                extent = {{-100,-100},{100,100}}),
+        Polygon(lineColor = {0,0,255},
+                fillColor = {75,138,73},
+                pattern = LinePattern.None,
+                fillPattern = FillPattern.Solid,
+                points = {{-36,60},{64,0},{-36,-60},{-36,60}})}),
+    Diagram(coordinateSystem(preserveAspectRatio=false,
+      extent={{-100,-220},{100,220}})));
+end LowerUpperBound;
